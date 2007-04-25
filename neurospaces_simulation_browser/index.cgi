@@ -58,7 +58,7 @@ use Sesa::Workflow;
 my $query;
 
 
-my $ssp_directory = '/local_home/local_home/hugo/neurospaces_project/purkinje-comparison/schedules';
+my $ssp_directory = '/local_home/local_home/hugo/neurospaces_project/purkinje-comparison';
 
 
 sub document_ssp_schedule
@@ -277,7 +277,7 @@ sub formalize_ssp_root
 
     # get all information from the database
 
-    my $unit_modules = [ sort map { s/^generated__//; s/\.yml$//; $_; } grep { /^generated__/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/"`, ];
+    my $unit_modules = [ sort map { s/^generated__//; s/\.yml$//; $_; } grep { /^generated__/ && /\.yml$/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/schedules"`, ];
 
     my @links;
     my @titles;
@@ -307,7 +307,8 @@ sub main
 {
     $query = CGI->new(<STDIN>);
 
-    if (!-r $ssp_directory)
+    if (!-r $ssp_directory
+	|| !-r "$ssp_directory/schedules")
     {
 	&header('Simulation Browser and Editor', "", undef, 1, 1, '', '', '');
 
@@ -319,7 +320,7 @@ sub main
 
 	print "<p>\n";
 
-	print "$ssp_directory not found\n";
+	print "$ssp_directory/schedules not found\n";
 
 	print "</center>\n";
 
@@ -367,7 +368,7 @@ sub main
 		{
 		    local $/;
 
-		    $scheduler = Load(`cat "$ssp_directory/$filename"`);
+		    $scheduler = Load(`cat "$ssp_directory/schedules/$filename"`);
 		};
 
 		if ($@)
