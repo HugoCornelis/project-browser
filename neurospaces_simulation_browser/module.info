@@ -1,0 +1,5 @@
+category=neurospaces
+longdesc=Inspect SSP simulation schedules and their output 
+desc=SSP Inspector
+name=Neurospaces/SSP
+version=1.270

@@ -1,0 +1,16 @@
+Makefile$
+Makefile.in$
+^_Inline
+^aclocal.m4$
+^config.log$
+^config.status$
+^configure$
+^example.out$
+^html
+^install-sh$
+^installed
+^missing$
+^tests/Makefile$
+^tests/Makefile.in$
+^tests/html
+gz$

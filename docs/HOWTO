@@ -1,0 +1,19 @@
+-*- outline -*-
+
+* Install, developer machine
+** Copy the usermin modules to the usermin module directory
+** rm -f /etc/usermin/module.infos.cache
+** Add the neurospaces category
+In /usr/share/usermin/ulang/en:
+category_neurospaces=Neurospaces
+longcategory_neurospaces=Neurospaces Models, Simulations and Output
+
+* LCL::Aux is imported but not distributed
+Sesa::Sems
+Sesa::Persistency
+
+Seems only using array_max().
+
+* sudo mkdir /var/log/sesa
+Is not available on a target system, must be done during installation.
+
