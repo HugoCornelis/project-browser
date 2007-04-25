@@ -91,6 +91,15 @@ sub check_access
 
     my %access = &::get_module_acl();
 
+#     print STDERR Dumper(\%ENV);
+
+    if ($ENV{WEBMIN_CONFIG} =~ /usermin/i)
+    {
+	# convert usermin format to webmin format
+
+	$access{$module} = $access{mode};
+    }
+
     print STDERR "Access to $module for this user : $access{$module}\n";
     print STDERR Dumper(\%access);
 

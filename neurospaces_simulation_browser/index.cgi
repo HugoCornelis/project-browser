@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
 #
 # (C) 2007 Hugo Cornelis hugo.cornelis@gmail.com
 #
@@ -57,12 +58,12 @@ use Sesa::Workflow;
 my $query;
 
 
-my $ssp_directory = '/local_home/local_home/hugo/neurospaces_project/purkinje-comparison';
+my $ssp_directory = '/local_home/local_home/hugo/neurospaces_project/purkinje-comparison/schedules';
 
 
 sub document_ssp_schedule
 {
-    my $sesa_specification = shift;
+    my $scheduler = shift;
 
     my $module_name = shift;
 
@@ -80,9 +81,9 @@ sub document_ssp_schedule
 #     }
 #     else
 #     {
-	$column_specification = $sesa_specification->{column_specification};
+# 	$column_specification = $sesa_specification->{column_specification};
 
-	$submitted_request = 'column-specification';
+# 	$submitted_request = 'column-specification';
 #     }
 
 #     my $units
@@ -198,8 +199,8 @@ sub document_ssp_schedule
 	     CGI => $query,
 	     center => 1,
 	     column_headers => 1,
-	     contents => $units,
-	     format => $format_units,
+	     contents => $scheduler,
+# 	     format => $format_units,
 	     has_submit => $editable == 2,
 	     has_reset => $editable == 2,
 	     header => $header,
@@ -219,43 +220,43 @@ sub document_ssp_schedule
 				    ],
 	     row_filter => sub { !ref $_[1]->{value}, },
 	     separator => '/',
-	     sort => sub { return $order->{$_[0]} <=> $order->{$_[1]}; },
-	     submit_actions => {
-				'column-specification' =>
-				sub
-				{
-				    my ($document, $request, $contents, ) = @_;
+# 	     sort => sub { return $order->{$_[0]} <=> $order->{$_[1]}; },
+# 	     submit_actions => {
+# 				'column-specification' =>
+# 				sub
+# 				{
+# 				    my ($document, $request, $contents, ) = @_;
 
-				    # merge the new data into the old data
+# 				    # merge the new data into the old data
 
-				    map
-				    {
-					$column_specification->{$_}->{units}
-					    = $contents->{$_}->{value};
-				    }
-					keys %$column_specification;
+# 				    map
+# 				    {
+# 					$column_specification->{$_}->{units}
+# 					    = $contents->{$_}->{value};
+# 				    }
+# 					keys %$column_specification;
 
-				    # write the new content
+# 				    # write the new content
 
-				    specification_write($module_name, $sesa_specification, [ $submitted_request ] );
+# 				    specification_write($module_name, $scheduler, [ $submitted_request ] );
 
-				    return $contents;
-				},
-			       },
-	     workflow => {
-			  actor => $workflow_units,
-			  configuration => {
-					    header => {
-						       after => 1,
-						       before => 1,
-# 						       history => 1,
-						       related => 1,
-						      },
-					    trailer => {
-							after => 1,
-						       },
-					   },
-			 },
+# 				    return $contents;
+# 				},
+# 			       },
+# 	     workflow => {
+# # 			  actor => $workflow_units,
+# 			  configuration => {
+# 					    header => {
+# 						       after => 1,
+# 						       before => 1,
+# # 						       history => 1,
+# 						       related => 1,
+# 						      },
+# 					    trailer => {
+# 							after => 1,
+# 						       },
+# 					   },
+# 			 },
 	    );
 
     return [ $document_units, ];
@@ -276,7 +277,7 @@ sub formalize_ssp_root
 
     # get all information from the database
 
-    my $unit_modules = [ grep { /^\w+$/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/"`, ];
+    my $unit_modules = [ map { s/^generated__//; s/\.yml$//; $_; } grep { /^generated__/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/"`, ];
 
     my @links;
     my @titles;
@@ -289,7 +290,7 @@ sub formalize_ssp_root
 	    push(@links, "?module_name=${module}");
 	    push(@titles, $module);
 
-	    my $icon = specification_get_icon( { module => [ $module, ], }, );
+	    my $icon = 'images/ssp32x32.png';
 
 	    push(@icons, $icon, );
 	}
@@ -358,7 +359,7 @@ sub main
 
 		use YAML;
 
-		my $schedule = $module_name;
+		my $filename = "generated__$module_name.yml";
 
 		my $scheduler;
 
@@ -366,7 +367,7 @@ sub main
 		{
 		    local $/;
 
-		    $scheduler = Load(`cat "$filename"`);
+		    $scheduler = Load(`cat "$ssp_directory/$filename"`);
 		};
 
 		if ($@)
@@ -378,7 +379,7 @@ sub main
 		    &error($read_error);
 		}
 
-		my $documents = document_ssp_schedule($sesa_specification, $module_name, );
+		my $documents = document_ssp_schedule($scheduler, $module_name, );
 
 		my $data = documents_parse_input($documents);
 
