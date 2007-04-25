@@ -277,7 +277,7 @@ sub formalize_ssp_root
 
     # get all information from the database
 
-    my $unit_modules = [ map { s/^generated__//; s/\.yml$//; $_; } grep { /^generated__/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/"`, ];
+    my $unit_modules = [ sort map { s/^generated__//; s/\.yml$//; $_; } grep { /^generated__/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/"`, ];
 
     my @links;
     my @titles;

@@ -7,6 +7,9 @@
 In /usr/share/usermin/ulang/en:
 category_neurospaces=Neurospaces
 longcategory_neurospaces=Neurospaces Models, Simulations and Output
+** Allow access to the module
+Using webmin, go to
+Webmin/Usermin Configuration/Available Modules
 
 * LCL::Aux is imported but not distributed
 Sesa::Sems
