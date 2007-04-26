@@ -1,0 +1,5 @@
+category=neurospaces
+longdesc=Visualize simulation output 
+desc=Simulation Output Inspector
+name=Neurospaces Output
+version=1.270

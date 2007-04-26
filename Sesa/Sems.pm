@@ -54,6 +54,26 @@ BEGIN
 
     $stderr_logging = 0;
 
+    sub unique
+    {
+	if (!@_)
+	{
+	    return ();
+	}
+
+	my @result = (shift);
+
+	foreach (@_)
+	{
+	    if ($result[$#result] ne $_)
+	    {
+		push @result, $_;
+	    }
+	}
+
+	return @result;
+    }
+
     # param list can be array or ref ro array
     sub array_max {
 	my ($first, @list) = @_;

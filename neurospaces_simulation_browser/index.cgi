@@ -65,19 +65,19 @@ sub document_ssp_schedule
 {
     my $scheduler = shift;
 
-    my $module_name = shift;
+    my $schedule_name = shift;
 
-    my $submodule_name = shift || '';
+    my $subschedule_name = shift || '';
 
     my $column_specification;
 
     my $submitted_request;
 
-#     if (exists $sesa_specification->{column_specifications}->{$submodule_name}->{column_specification})
+#     if (exists $sesa_specification->{column_specifications}->{$subschedule_name}->{column_specification})
 #     {
-# 	$column_specification = $sesa_specification->{column_specifications}->{$submodule_name}->{column_specification};
+# 	$column_specification = $sesa_specification->{column_specifications}->{$subschedule_name}->{column_specification};
 
-# 	$submitted_request = "column_specification_$submodule_name";
+# 	$submitted_request = "column_specification_$subschedule_name";
 #     }
 #     else
 #     {
@@ -86,14 +86,14 @@ sub document_ssp_schedule
 # 	$submitted_request = 'column-specification';
 #     }
 
-#     my $units
+#     my $schedules
 # 	= {
 # 	   map
 # 	   {
 # 	       $_ => {
 # 		      label => $column_specification->{$_}->{description},
 # 		      name => $_,
-# 		      value => $column_specification->{$_}->{units} || '',
+# 		      value => $column_specification->{$_}->{schedules} || '',
 # 		     };
 # 	   }
 # 	   keys %$column_specification,
@@ -108,7 +108,7 @@ sub document_ssp_schedule
 # 	   keys %$column_specification,
 # 	  };
 
-#     my $format_units
+#     my $format_schedules
 # 	= {
 # 	   columns =>
 # 	   [
@@ -136,14 +136,14 @@ sub document_ssp_schedule
 # 	   ],
 # 	  };
 
-    my $header = "SSP Schedule $module_name";
+    my $header = "SSP Schedule $schedule_name";
 
-#     if ($submodule_name)
+#     if ($subschedule_name)
 #     {
-# 	$header .= ", Submodule $submodule_name";
+# 	$header .= ", Submodule $subschedule_name";
 #     }
 
-#     my $workflow_units
+#     my $workflow_schedules
 # 	= Sesa::Workflow->new
 # 	    (
 # 	     {
@@ -162,29 +162,29 @@ sub document_ssp_schedule
 # 			   },
 # 			   {
 # 			    label => "These",
-# 			    target => "/sems_sesa_persistency_editor/units.cgi?module_name=$module_name",
+# 			    target => "/sems_sesa_persistency_editor/units.cgi?schedule_name=$schedule_name",
 # 			   },
 # 			  ],
 # 	      related => [
 # 			  {
-# 			   label => "Run module $module_name",
-# 			   target => '/' . specification_get_module_directory( { module => [ $module_name, ], }, ),
+# 			   label => "Run module $schedule_name",
+# 			   target => '/' . specification_get_module_directory( { module => [ $schedule_name, ], }, ),
 # 			  },
 # 			  {
 # 			   label => 'Defaults',
-# 			   target => "/sems_sesa_persistency_editor/defaults.cgi?module_name=$module_name&submodule_name=$submodule_name",
+# 			   target => "/sems_sesa_persistency_editor/defaults.cgi?schedule_name=$schedule_name&subschedule_name=$subschedule_name",
 # 			  },
 # 			  {
 # 			   label => 'Labels',
-# 			   target => "/sems_sesa_persistency_editor/labels.cgi?module_name=$module_name&submodule_name=$submodule_name",
+# 			   target => "/sems_sesa_persistency_editor/labels.cgi?schedule_name=$schedule_name&subschedule_name=$subschedule_name",
 # 			  },
 # 			  {
 # 			   label => 'Row Order',
-# 			   target => "/sems_sesa_persistency_editor/order.cgi?module_name=$module_name&submodule_name=$submodule_name",
+# 			   target => "/sems_sesa_persistency_editor/order.cgi?schedule_name=$schedule_name&subschedule_name=$subschedule_name",
 # 			  },
 # 			  {
 # 			   label => 'Headers',
-# 			   target => "/sems_sesa_persistency_editor/heditor.cgi?module_name=$module_name&submodule_name=$submodule_name",
+# 			   target => "/sems_sesa_persistency_editor/heditor.cgi?schedule_name=$schedule_name&subschedule_name=$subschedule_name",
 # 			  },
 # 			 ],
 # 	     },
@@ -193,20 +193,20 @@ sub document_ssp_schedule
 # 	     },
 # 	    );
 
-    my $document_units
+    my $document_schedules
 	= Sesa::TreeDocument->new
 	    (
 	     CGI => $query,
 	     center => 1,
 	     column_headers => 1,
 	     contents => $scheduler,
-# 	     format => $format_units,
+# 	     format => $format_schedules,
 	     has_submit => $editable == 2,
 	     has_reset => $editable == 2,
 	     header => $header,
 	     hidden => {
-			$module_name ? ( module_name => $module_name, ) : (),
-			$submodule_name ? ( submodule_name => $submodule_name, ) : (),
+			$schedule_name ? ( schedule_name => $schedule_name, ) : (),
+			$subschedule_name ? ( subschedule_name => $subschedule_name, ) : (),
 		       },
 	     name => 'column-specification',
 	     output_mode => 'html',
@@ -231,20 +231,20 @@ sub document_ssp_schedule
 
 # 				    map
 # 				    {
-# 					$column_specification->{$_}->{units}
+# 					$column_specification->{$_}->{schedules}
 # 					    = $contents->{$_}->{value};
 # 				    }
 # 					keys %$column_specification;
 
 # 				    # write the new content
 
-# 				    specification_write($module_name, $scheduler, [ $submitted_request ] );
+# 				    specification_write($schedule_name, $scheduler, [ $submitted_request ] );
 
 # 				    return $contents;
 # 				},
 # 			       },
 # 	     workflow => {
-# # 			  actor => $workflow_units,
+# # 			  actor => $workflow_schedules,
 # 			  configuration => {
 # 					    header => {
 # 						       after => 1,
@@ -259,11 +259,11 @@ sub document_ssp_schedule
 # 			 },
 	    );
 
-    return [ $document_units, ];
+    return [ $document_schedules, ];
 }
 
 
-sub formalize_sesa_units_for_module
+sub formalize_sesa_schedules_for_module
 {
     my $documents = shift;
 
@@ -277,18 +277,18 @@ sub formalize_ssp_root
 
     # get all information from the database
 
-    my $unit_modules = [ sort map { s/^generated__//; s/\.yml$//; $_; } grep { /^generated__/ && /\.yml$/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/schedules"`, ];
+    my $all_schedules = [ sort map { s/^generated__//; s/\.yml$//; $_; } grep { /^generated__/ && /\.yml$/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/schedules"`, ];
 
     my @links;
     my @titles;
     my @icons;
 
-    foreach my $module (@$unit_modules)
+    foreach my $schedule (@$all_schedules)
     {
-	#    if ($access{$submodule})
+	#    if ($access{$subschedule})
 	{
-	    push(@links, "?module_name=${module}");
-	    push(@titles, $module);
+	    push(@links, "?schedule_name=${schedule}");
+	    push(@titles, $schedule);
 
 	    my $icon = 'images/ssp32x32.png';
 
@@ -332,9 +332,9 @@ sub main
     }
     else
     {
-	my $module_name = $query->param('module_name');
+	my $schedule_name = $query->param('schedule_name');
 
-	if (!defined $module_name)
+	if (!defined $schedule_name)
 	{
 	    my $submodules = do './submodules.pl';
 
@@ -350,17 +350,17 @@ sub main
 	}
 	else
 	{
-	    my $submodule_name = $query->param('submodule_name');
+	    my $subschedule_name = $query->param('subschedule_name');
 
-	    if (!defined $submodule_name || $submodule_name eq '')
+	    if (!defined $subschedule_name || $subschedule_name eq '')
 	    {
-		&header("SSP Schedule: $module_name", "", undef, 1, 1, '', '', '');
+		&header("SSP Schedule: $schedule_name", "", undef, 1, 1, '', '', '');
 
 		print "<hr>\n";
 
 		use YAML;
 
-		my $filename = "generated__$module_name.yml";
+		my $filename = "generated__$schedule_name.yml";
 
 		my $scheduler;
 
@@ -380,13 +380,13 @@ sub main
 		    &error($read_error);
 		}
 
-		my $documents = document_ssp_schedule($scheduler, $module_name, );
+		my $documents = document_ssp_schedule($scheduler, $schedule_name, );
 
 		my $data = documents_parse_input($documents);
 
 		documents_merge_data($documents, $data);
 
-		formalize_sesa_units_for_module($documents);
+		formalize_sesa_schedules_for_module($documents);
 
 		# finalize (web|user)min specific stuff.
 
@@ -398,24 +398,24 @@ sub main
 
 		print "<hr>\n";
 
-		my ($sesa_specification, $read_error) = specification_read($module_name);
+		my ($sesa_specification, $read_error) = specification_read($schedule_name);
 
 		if ($read_error)
 		{
 		    &error($read_error);
 		}
 
-		my $documents = document_ssp_schedule($sesa_specification, $module_name, $submodule_name, );
+		my $documents = document_ssp_schedule($sesa_specification, $schedule_name, $subschedule_name, );
 
 		my $data = documents_parse_input($documents);
 
 		documents_merge_data($documents, $data);
 
-		formalize_sesa_units_for_module($documents);
+		formalize_sesa_schedules_for_module($documents);
 
 		# finalize (web|user)min specific stuff.
 
-		&footer("index.cgi", 'Persistency Layer Editors', "units.cgi", 'Unit Editor', "units.cgi?module_name=${module_name}", ${module_name});
+		&footer("index.cgi", 'Persistency Layer Editors', "schedules.cgi", 'Schedule Editor', "schedules.cgi?schedule_name=${schedule_name}", ${schedule_name});
 	    }
 	}
     }
