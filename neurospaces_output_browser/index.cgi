@@ -1,3 +1,4 @@
+#!/usr/bin/perl -d:ptkdb -w
 #!/usr/bin/perl -w
 #!/usr/bin/perl -d:ptkdb -w
 #
@@ -42,7 +43,7 @@ use Sesa::Sems qw(
 use Sesa::Access (
 		  neurospaces_output_browser => {
 						 level => (our $editable = 1 && \$editable),
-						 label => 'ssp schedules and their output',
+						 label => 'simulation output',
 						},
 		 );
 # use Sesa::Persistency::Specification qw(
@@ -134,6 +135,13 @@ sub document_output_root
     }
 	@$used_protocols;
 
+    # now add all selectors
+
+    foreach my $unique (@$uniques)
+    {
+	unshift @$unique, 'All';
+    }
+
     print STDERR "uniques is:\n" . Dumper($uniques);
 
     my $format_outputs
@@ -141,31 +149,103 @@ sub document_output_root
 	   columns =>
 	   [
 	    {
-	     header => 'Model Name',
-	     key_name => 'label',
-	     type => 'constant',
+	     header => 'Models',
+	     key_name => 'dummy1',
+	     type => 'code',
 	     be_defined => 1,
+	     generate =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $row_key = shift;
+
+		 my $row = shift;
+
+		 my $filter_data = shift;
+
+		 if ($editable)
+		 {
+		     my $str = '';
+
+		     print STDERR Dumper(\@_);
+
+		     my $value = $row->[0];
+
+		     $str
+			 .= $query->popup_menu
+			     (
+			      -name => "field_$self->{name}_configuration_$row_key",
+			      -default => $value->[0],
+			      -values => $value,
+			      -override => 1,
+			     );
+
+		     return($str);
+		 }
+		 else
+		 {
+		     return "&nbsp;";
+		 }
+	     },
 	    },
 	    {
-	     header => 'Protocol',
-	     key_name => 'value',
-	     type => 'constant',
+	     header => 'Protocols',
+	     key_name => 'dummy2',
+	     type => 'code',
 	     be_defined => 1,
+	     generate =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $row_key = shift;
+
+		 my $row = shift;
+
+		 my $filter_data = shift;
+
+		 if ($editable)
+		 {
+		     my $str = '';
+
+		     print STDERR Dumper(\@_);
+
+		     my $value = $row->[1];
+
+		     $str
+			 .= $query->popup_menu
+			     (
+			      -name => "field_$self->{name}_configuration_$row_key",
+			      -default => $value->[0],
+			      -values => $value,
+			      -override => 1,
+			     );
+
+		     return($str);
+		 }
+		 else
+		 {
+		     return "&nbsp;";
+		 }
+	     },
 	    },
 	   ],
+	   hashkey => 'none',
 	  };
 
-    my $document_outputs
+    my $document_output_selector
 	= Sesa::TableDocument->new
 	    (
 	     CGI => $query,
 	     center => 1,
 	     column_headers => 1,
-	     contents => $uniques,
+	     contents => { content => $uniques, },
 	     format => $format_outputs,
-	     has_submit => $editable == 2,
-	     has_reset => $editable == 2,
-	     header => 'Outputs Selections',
+	     has_submit => $editable,
+	     has_reset => $editable,
+	     header => 'Output Selections
+<h3> Select a model and protocol, then submit </h3>',
 # 	     hidden => {
 # 			$module_name ? ( module_name => $module_name, ) : (),
 # 			$submodule_name ? ( submodule_name => $submodule_name, ) : (),
@@ -180,7 +260,7 @@ sub document_output_root
 				      type => 'constant',
 				     },
 				    ],
-	     row_filter => sub { !ref $_[1]->{value}, },
+# 	     row_filter => sub { !ref $_[1]->{value}, },
 	     separator => '/',
 # 	     sort => sub { return $order->{$_[0]} <=> $order->{$_[1]}; },
 # 	     submit_actions => {
@@ -221,7 +301,7 @@ sub document_output_root
 # 			 },
 	    );
 
-    return [ $document_outputs, ];
+    return [ $document_output_selector, ];
 }
 
 
@@ -268,7 +348,7 @@ sub main
 	{
 	    my $submodules = do './submodules.pl';
 
-	    &header("SSP Simulation Browser", "", undef, 1, 1, 0, '');
+	    &header("Simulation Output Browser", "", undef, 1, 1, 0, '');
 
 	    print "<hr>\n";
 
@@ -282,7 +362,7 @@ sub main
 
 	    # finalize (web|user)min specific stuff.
 
-	    &footer("index.cgi", 'SSP Simulation Browser');
+	    &footer("index.cgi", 'Simulation Output Browser');
 	}
 	else
 	{

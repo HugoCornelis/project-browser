@@ -29,7 +29,7 @@ sub form_info_contents
 
     my $str = '';
 
-    my $count = 0;
+    my $row_count = 0;
 
     my $contents = $self->{contents};
 
@@ -88,6 +88,7 @@ sub form_info_contents
 	$str .= "<tr $main::cb>" ;
 
 	my $column_number = 0;
+
 	foreach my $column (@{$self->{format}->{columns}})
 	{
 	    my $column_key = $column->{key_name};
@@ -119,11 +120,13 @@ sub form_info_contents
 
 	    my $data_defined
 		= (exists $column->{be_defined} && $column->{be_defined} eq 1)
-		    && ref $row eq 'HASH' && $column_key && defined $row->{$column_key};
+		    && ((ref $row eq 'HASH' && $column_key && defined $row->{$column_key})
+			|| ref $row eq 'ARRAY');
 
 	    my $filter_defined
 		= (exists $column->{filter_defined} && $column->{filter_defined} eq 1)
-		    && ref $filter_data eq 'HASH' && defined $filter_data->{$column_key};
+		    && ((ref $filter_data eq 'HASH' && defined $filter_data->{$column_key})
+			|| ref $filter_data eq 'ARRAY');
 
 # 	    if ($self->{format}->{hashkey} eq $column->{header}
 
@@ -145,10 +148,16 @@ sub form_info_contents
 		# construct a sensible default value for textfields and constants.
 
 		my $content
-		    = $self->{format}->{hashkey} && $self->{format}->{hashkey} eq $column->{header}
+		    = ($self->{format}->{hashkey}
+		       && $self->{format}->{hashkey} eq $column->{header})
 			? $row_key # $column->{header}
-			    : defined $column_key && ref $filter_data eq 'HASH' && exists $filter_data->{$column_key}
-				? $filter_data->{$column_key} : $row->{$column_key};
+			    : (defined $column_key
+			       && ref $filter_data eq 'HASH'
+			       && exists $filter_data->{$column_key})
+				? $filter_data->{$column_key}
+				    : ref $row eq 'HASH'
+					? $row->{$column_key}
+					    : $row->[$column_number];
 
 		# start determining what encapsulator to use
 
@@ -398,7 +407,7 @@ sub form_info_contents
 
 	$str .= "</tr>\n";
 
-	$count++;
+	$row_count++;
     }
 
     if (exists $self->{row_finalize})
