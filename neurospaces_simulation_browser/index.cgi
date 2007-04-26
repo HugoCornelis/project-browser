@@ -305,7 +305,7 @@ sub formalize_ssp_root
 
 sub main
 {
-    $query = CGI->new(<STDIN>);
+    $query = CGI->new();
 
     if (!-r $ssp_directory
 	|| !-r "$ssp_directory/schedules")
