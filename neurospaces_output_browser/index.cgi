@@ -172,11 +172,20 @@ sub document_output_root
 
 		     my $value = $row->[0];
 
+		     my $name = "field_$self->{name}_configuration_${row_key}_0";
+
+		     my $default = $query->param($name);
+
+		     if (!defined $default)
+		     {
+			 $default = $value->[0];
+		     }
+
 		     $str
 			 .= $query->popup_menu
 			     (
-			      -name => "field_$self->{name}_configuration_$row_key",
-			      -default => $value->[0],
+			      -name => $name,
+			      -default => $default,
 			      -values => $value,
 			      -override => 1,
 			     );
@@ -213,11 +222,20 @@ sub document_output_root
 
 		     my $value = $row->[1];
 
+		     my $name = "field_$self->{name}_configuration_${row_key}_1";
+
+		     my $default = $query->param($name);
+
+		     if (!defined $default)
+		     {
+			 $default = $value->[0];
+		     }
+
 		     $str
 			 .= $query->popup_menu
 			     (
-			      -name => "field_$self->{name}_configuration_$row_key",
-			      -default => $value->[0],
+			      -name => $name,
+			      -default => $default,
 			      -values => $value,
 			      -override => 1,
 			     );
@@ -234,6 +252,17 @@ sub document_output_root
 	   hashkey => 'none',
 	  };
 
+    my $session_id_digest = $query->param('session_id');
+
+    if (!defined $session_id_digest)
+    {
+	my $session_id = rand(10000);
+
+	use Digest::SHA1 'sha1_base64';
+
+	$session_id_digest = sha1_base64($session_id);
+    }
+
     my $document_output_selector
 	= Sesa::TableDocument->new
 	    (
@@ -246,10 +275,11 @@ sub document_output_root
 	     has_reset => $editable,
 	     header => 'Output Selections
 <h3> Select a model and protocol, then submit </h3>',
-# 	     hidden => {
+	     hidden => {
+			session_id => $session_id_digest,
 # 			$module_name ? ( module_name => $module_name, ) : (),
 # 			$submodule_name ? ( submodule_name => $submodule_name, ) : (),
-# 		       },
+		       },
 	     name => 'output-selector',
 	     output_mode => 'html',
 	     regex_encapsulators => [
@@ -315,7 +345,7 @@ sub formalize_output_root
 
 sub main
 {
-    $query = CGI->new(<STDIN>);
+    $query = CGI->new();
 
     if (!-r $ssp_directory
         || !-r "$ssp_directory/output")
