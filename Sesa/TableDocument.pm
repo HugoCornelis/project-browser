@@ -321,11 +321,12 @@ sub form_info_contents
 		TYPE:
 		    {
 			/^button$/
-			    || /^constant$/
-				|| /^ip_address$/
-				    || /^number$/
-					|| /^textarea$/
-					    || /^textfield$/
+			    || /^checkbox$/
+				|| /^constant$/
+				    || /^ip_address$/
+					|| /^number$/
+					    || /^textarea$/
+						|| /^textfield$/
 					and do
 				    {
 					my $encapsulator = "_encapsulate_$_";

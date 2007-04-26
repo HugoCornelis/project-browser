@@ -289,7 +289,14 @@ sub _generate_sequence
 
 # 	$result .= "<a href=\"http://localhost/webmin$target";
 
-	$result .= "<a href=\"https://localhost:10000$target";
+	if ($ENV{WEBMIN_CONFIG} =~ /usermin/i)
+	{
+	    $result .= "<a href=\"https://localhost:20000$target";
+	}
+	else
+	{
+	    $result .= "<a href=\"https://localhost:10000$target";
+	}
 
 	if ($target =~ /\?/)
 	{

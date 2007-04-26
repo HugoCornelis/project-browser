@@ -1,4 +1,3 @@
-#!/usr/bin/perl -d:ptkdb -w
 #!/usr/bin/perl -w
 #!/usr/bin/perl -d:ptkdb -w
 #
@@ -144,7 +143,7 @@ sub document_output_root
 
     print STDERR "uniques is:\n" . Dumper($uniques);
 
-    my $format_outputs
+    my $format_output_selector
 	= {
 	   columns =>
 	   [
@@ -194,7 +193,7 @@ sub document_output_root
 		 }
 		 else
 		 {
-		     return "&nbsp;";
+		     return "No models found";
 		 }
 	     },
 	    },
@@ -244,7 +243,7 @@ sub document_output_root
 		 }
 		 else
 		 {
-		     return "&nbsp;";
+		     return "No protocols found";
 		 }
 	     },
 	    },
@@ -263,6 +262,36 @@ sub document_output_root
 	$session_id_digest = sha1_base64($session_id);
     }
 
+    my $workflow_output_selector
+	= Sesa::Workflow->new
+	    (
+	     {
+	      sequence => [
+			   {
+			    label => "Neurospaces",
+			    target => '/?cat=neurospaces',
+			   },
+			   {
+			    label => "Outputs",
+			    target => '/neurospaces_output_browser/',
+			   },
+			  ],
+	      related => [
+			  {
+			   label => "Simulation Generator",
+			   target => '/neurospaces_simulation_generator/',
+			  },
+			  {
+			   label => "Simulation Browser",
+			   target => '/neurospaces_simulation_browser/',
+			  },
+			 ],
+	     },
+	     {
+	      self => $ENV{REQUEST_URI},
+	     },
+	    );
+
     my $document_output_selector
 	= Sesa::TableDocument->new
 	    (
@@ -270,7 +299,7 @@ sub document_output_root
 	     center => 1,
 	     column_headers => 1,
 	     contents => { content => $uniques, },
-	     format => $format_outputs,
+	     format => $format_output_selector,
 	     has_submit => $editable,
 	     has_reset => $editable,
 	     header => 'Output Selections
@@ -315,23 +344,211 @@ sub document_output_root
 # 				    return $contents;
 # 				},
 # 			       },
-# 	     workflow => {
-# 			  actor => $workflow_outputs,
-# 			  configuration => {
-# 					    header => {
-# 						       after => 1,
-# 						       before => 1,
-# # 						       history => 1,
-# 						       related => 1,
-# 						      },
-# 					    trailer => {
-# 							after => 1,
-# 						       },
-# 					   },
-# 			 },
+	     workflow => {
+			  actor => $workflow_output_selector,
+			  configuration => {
+					    header => {
+						       after => 1,
+						       before => 1,
+# 						       history => 1,
+						       related => 1,
+						      },
+					    trailer => {
+							after => 1,
+						       },
+					   },
+			 },
 	    );
 
-    return [ $document_output_selector, ];
+    my $document_output_available;
+
+    my $output_available_unique
+	= {
+	  };
+
+    my $render = 1;
+
+    foreach my $column (qw(
+			   0
+			   1
+			  ))
+    {
+	my $document_name = 'output-selector';
+
+	my $name = "field_${document_name}_configuration_content_$column";
+
+	my $value = $query->param($name);
+
+	if (!defined $value)
+	{
+	    $render = 0;
+
+	    last;
+	}
+
+	if ($value eq 'All')
+	{
+	    my $target = $uniques->[$column];
+
+	    #! remove 'All' entry
+
+	    $output_available_unique->{$column} = [ (@$target)[1 .. $#$target], ];
+	}
+	else
+	{
+	    $output_available_unique->{$column} = [ $value, ];
+	}
+    }
+
+    print STDERR "output_available_unique is\n" . Dumper($output_available_unique);
+
+    if ($render)
+    {
+	my $output_available
+	    = {
+	       map
+	       {
+		   my $row = $_;
+
+		   my %result
+		       = (
+			  $row => {
+				   map
+				   {
+				       $_ => 1,
+				   }
+				   @{$output_available_unique->{1}},
+				  },
+			 );
+
+		   %result;
+	       }
+	       @{$output_available_unique->{0}},
+	      };
+
+	print STDERR "output_available is\n" . Dumper($output_available);
+
+	my $format_output_available
+	    = {
+	       columns => [
+			   {
+			    header => 'Model Name',
+			    key_name => undef,
+			    type => 'constant',
+			    be_defined => 1,
+			   },
+			   map
+			   {
+			       my $result
+				   = {
+				      header => $output_available_unique->{1}->[$_ - 1],
+				      key_name => $output_available_unique->{1}->[$_ - 1],
+				      type => 'checkbox',
+				      be_defined => 1,
+				     };
+
+			       $result;
+			   }
+			   1 .. @{$output_available_unique->{1}},
+			  ],
+	       hashkey => 'Model Name',
+	      };
+
+	my $format_output_available2
+	    = {
+	       columns => [
+			   #! this loop automatically includes the model name column
+
+			   map
+			   {
+			       my $result
+				   = {
+				      header => $_ eq 0 ? 'Model Name' : 'Check',
+				      key_name => $output_available_unique->{1}->[$_ - 1],
+				      type => $_ eq 0 ? 'constant' : 'checkbox',
+				      be_defined => 1,
+				     };
+
+			       $result;
+			   }
+			   0 .. @{$output_available_unique->{1}},
+			  ],
+	       hashkey => 'Model Name',
+	      };
+
+	$document_output_available
+	    = Sesa::TableDocument->new
+		(
+		 CGI => $query,
+		 center => 1,
+		 column_headers => 1,
+		 contents => $output_available,
+		 format => $format_output_available,
+		 has_submit => $editable,
+		 has_reset => $editable,
+		 header => 'Simulation Selections
+<h3> Select the simulations you are interested in, then submit </h3>',
+		 hidden => {
+			    session_id => $session_id_digest,
+			    # 			$module_name ? ( module_name => $module_name, ) : (),
+			    # 			$submodule_name ? ( submodule_name => $submodule_name, ) : (),
+			   },
+		 name => 'output-available',
+		 output_mode => 'html',
+		 regex_encapsulators => [
+					 {
+					  match_content => 1,
+					  name => 'channel-inhibited-editfield-encapsulator',
+					  regex => ".*NEW_.*",
+					  type => 'constant',
+					 },
+					],
+		 # 	     row_filter => sub { !ref $_[1]->{value}, },
+		 separator => '/',
+		 sort => sub { return $_[0] cmp $_[1]; },
+		 # 	     submit_actions => {
+		 # 				'output-selector' =>
+		 # 				sub
+		 # 				{
+		 # 				    my ($document, $request, $contents, ) = @_;
+
+		 # 				    # merge the new data into the old data
+
+		 # 				    map
+		 # 				    {
+		 # 					$column_specification->{$_}->{outputs}
+		 # 					    = $contents->{$_}->{value};
+		 # 				    }
+		 # 					keys %$column_specification;
+
+		 # 				    # write the new content
+
+		 # 				    specification_write($module_name, $scheduler, [ $submitted_request ] );
+
+		 # 				    return $contents;
+		 # 				},
+		 # 			       },
+		 workflow => {
+			      actor => $workflow_output_selector,
+			      configuration => {
+						header => {
+							   after => 1,
+							   before => 1,
+							   # 						       history => 1,
+							   related => 1,
+							  },
+						trailer => {
+							    after => 1,
+							   },
+					       },
+			     },
+		);
+
+	my $a;
+
+    }
+
+    return [ $document_output_selector, (defined $document_output_available ? ($document_output_available) : ()), ];
 }
 
 
