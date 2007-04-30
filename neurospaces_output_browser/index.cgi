@@ -303,7 +303,7 @@ sub document_output_root
 	     has_submit => $editable,
 	     has_reset => $editable,
 	     header => 'Output Selections
-<h3> Select a model and protocol, then submit. </h3>',
+<h4> Select a model and protocol, then submit. </h4>',
 	     hidden => {
 			session_id => $session_id_digest,
 # 			$module_name ? ( module_name => $module_name, ) : (),
@@ -534,9 +534,9 @@ sub document_output_root
 		 has_submit => $editable,
 		 has_reset => $editable,
 		 header => 'Simulation Selections
-<h3> Select the simulations you are interested in, then submit.
+<h4> Select the simulations you are interested in, then submit.
 <br> You can inspect individual simulation parameters and output by clicking the hyperlinks.
-<br> Tip: click the middle mouse button to open the parameters or outputs in a new tab. </h3>',
+<br> Tip: click the middle mouse button to open the parameters or outputs in a new tab. </h4>',
 		 hidden => {
 			    session_id => $session_id_digest,
 			    # 			$module_name ? ( module_name => $module_name, ) : (),
@@ -638,9 +638,9 @@ sub main
     }
     else
     {
-	my $module_name = $query->param('module_name');
+	my $schedule_name = $query->param('schedule_name');
 
-	if (!defined $module_name)
+	if (!defined $schedule_name)
 	{
 	    my $submodules = do './submodules.pl';
 
@@ -662,17 +662,17 @@ sub main
 	}
 	else
 	{
-	    my $submodule_name = $query->param('submodule_name');
+	    my $subschedule_name = $query->param('subschedule_name');
 
-	    if (!defined $submodule_name || $submodule_name eq '')
+	    if (!defined $subschedule_name || $subschedule_name eq '')
 	    {
-		&header("SSP Schedule: $module_name", "", undef, 1, 1, '', '', '');
+		&header("SSP Schedule: $schedule_name", "", undef, 1, 1, '', '', '');
 
 		print "<hr>\n";
 
 		use YAML;
 
-		my $filename = "generated__$module_name.yml";
+		my $filename = "generated__$schedule_name.yml";
 
 		my $scheduler;
 
@@ -692,7 +692,7 @@ sub main
 		    &error($read_error);
 		}
 
-		my $documents = document_ssp_schedule($scheduler, $module_name, );
+		my $documents = document_ssp_schedule($scheduler, $schedule_name, );
 
 		my $data = documents_parse_input($documents);
 
@@ -710,14 +710,14 @@ sub main
 
 		print "<hr>\n";
 
-		my ($sesa_specification, $read_error) = specification_read($module_name);
+		my ($sesa_specification, $read_error) = specification_read($schedule_name);
 
 		if ($read_error)
 		{
 		    &error($read_error);
 		}
 
-		my $documents = document_ssp_schedule($sesa_specification, $module_name, $submodule_name, );
+		my $documents = document_ssp_schedule($sesa_specification, $schedule_name, $subschedule_name, );
 
 		my $data = documents_parse_input($documents);
 
@@ -727,7 +727,7 @@ sub main
 
 		# finalize (web|user)min specific stuff.
 
-		&footer("index.cgi", 'Persistency Layer Editors', "outputs.cgi", 'Output Editor', "outputs.cgi?module_name=${module_name}", ${module_name});
+		&footer("index.cgi", 'Persistency Layer Editors', "outputs.cgi", 'Output Editor', "outputs.cgi?schedule_name=${schedule_name}", ${schedule_name});
 	    }
 	}
     }

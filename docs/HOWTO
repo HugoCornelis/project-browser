@@ -10,6 +10,11 @@ longcategory_neurospaces=Neurospaces Models, Simulations and Output
 ** Allow access to the module
 Using webmin, go to
 Webmin/Usermin Configuration/Available Modules
+** sudo mkdir /var/log/sesa
+Is not available on a target system, must be done during installation.
+** plplot
+http://sourceforge.net/project/downloading.php?group_id=2915&use_mirror=internap&filename=plplot-5.7.3.tar.gz&45885240
+./configure --enable-pdl
 
 * LCL::Aux is imported but not distributed
 Sesa::Sems
