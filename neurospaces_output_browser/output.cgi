@@ -1,3 +1,4 @@
+#!/usr/bin/perl -d:ptkdb -w
 #!/usr/bin/perl -w
 #!/usr/bin/perl -d:ptkdb -w
 #
@@ -63,95 +64,27 @@ my $query;
 my $ssp_directory = '/local_home/local_home/hugo/neurospaces_project/purkinje-comparison';
 
 
-sub document_output_root
+sub document_ssp_outputs
 {
-    my $ssp_directory = shift;
+    my $outputs = shift;
 
-    # get all information from the database
-
-    my $output_modules = [ sort map { s/^generated__//; $_; } grep { /^generated__/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/output"`, ];
-
-    # spread the outputs over a grid
-
-    my $grid
-	= [
-	   map
-	   {
-	       [
-		split '__',
-	       ];
-	   }
-	   @$output_modules,
-	  ];
-
-    print STDERR "grid is:\n" . Dumper($grid);
-
-    # get the unique elements of the grid
-
-    my $transposed = [];
-
-    my $row_index = 0;
-
-    foreach my $row (@$grid)
-    {
-	my $column_index = 0;
-
-	foreach my $column (@$row)
-	{
-	    $transposed->[$column_index]->[$row_index] = $grid->[$row_index]->[$column_index];
-
-	    $column_index++;
-	}
-
-	$row_index++;
-    }
-
-    print STDERR "transposed is:\n" . Dumper($transposed);
-
-    my $uniques
-	= [
-	   map
-	   {
-	       [
-		Sesa::Sems::unique sort @$_,
-	       ];
-	   }
-	   @$transposed,
-	  ];
-
-    # remove known protocol names
-
-    my $known_protocols = [ 'conceptual_parameters', 'current', ];
-
-    my $used_protocols = $uniques->[1];
-
-    map
-    {
-	foreach my $known_protocol (@$known_protocols)
-	{
-	    s/^${known_protocol}_//;
-	}
-    }
-	@$used_protocols;
-
-    # now add all selectors
-
-    foreach my $unique (@$uniques)
-    {
-	unshift @$unique, 'All';
-    }
-
-    print STDERR "uniques is:\n" . Dumper($uniques);
+    my $schedule_name = shift;
 
     my $format_output_selector
 	= {
 	   columns =>
 	   [
 	    {
-	     header => 'Models',
-	     key_name => 'dummy1',
+	     header => 'Output Label',
+	     key_name => 'a',
+	     type => 'constant',
+	     filter_defined => 1,
+	    },
+	    {
+	     header => 'Actions',
+	     key_name => 'b',
 	     type => 'code',
-	     be_defined => 1,
+	     filter_defined => 1,
 	     generate =>
 	     sub
 	     {
@@ -163,89 +96,16 @@ sub document_output_root
 
 		 my $filter_data = shift;
 
-		 if ($editable)
-		 {
-		     my $str = '';
+		 my $result = '';
 
-		     print STDERR Dumper(\@_);
-
-		     my $value = $row->[0];
-
-		     my $name = "field_$self->{name}_configuration_${row_key}_0";
-
-		     my $default = $query->param($name);
-
-		     if (!defined $default)
-		     {
-			 $default = $value->[0];
-		     }
-
-		     $str
-			 .= $query->popup_menu
-			     (
-			      -name => $name,
-			      -default => $default,
-			      -values => $value,
-			      -override => 1,
-			     );
-
-		     return($str);
-		 }
-		 else
-		 {
-		     return "No models found";
-		 }
+		 $result .= "<a href=\"/neurospaces_simulation_browser/output.cgi?schedule_name=${schedule_name}&output_name=$row\"><font size=\"-2\" style=\"position: left: 20%;\"> plot </font></a> &nbsp;&nbsp;&nbsp;";
 	     },
 	    },
 	    {
-	     header => 'Protocols',
-	     key_name => 'dummy2',
-	     type => 'code',
-	     be_defined => 1,
-	     generate =>
-	     sub
-	     {
-		 my $self = shift;
-
-		 my $row_key = shift;
-
-		 my $row = shift;
-
-		 my $filter_data = shift;
-
-		 if ($editable)
-		 {
-		     my $str = '';
-
-		     print STDERR Dumper(\@_);
-
-		     my $value = $row->[1];
-
-		     my $name = "field_$self->{name}_configuration_${row_key}_1";
-
-		     my $default = $query->param($name);
-
-		     if (!defined $default)
-		     {
-			 $default = $value->[0];
-		     }
-
-		     $str
-			 .= $query->popup_menu
-			     (
-			      -name => $name,
-			      -default => $default,
-			      -values => $value,
-			      -override => 1,
-			     );
-
-		     return($str);
-		 }
-		 else
-		 {
-		     return "No protocols found";
-		 }
-	     },
+	     header => 'Selection',
+	     key_name => 'c',
+	     type => 'checkbox',
+	     filter_defined => 1,
 	    },
 	   ],
 	   hashkey => 'none',
@@ -285,6 +145,10 @@ sub document_output_root
 			   label => "Simulation Browser",
 			   target => '/neurospaces_simulation_browser/',
 			  },
+			  {
+			   label => "Simulation Schedule",
+			   target => "/neurospaces_simulation_browser/?schedule_name=$schedule_name",
+			  },
 			 ],
 	     },
 	     {
@@ -298,12 +162,15 @@ sub document_output_root
 	     CGI => $query,
 	     center => 1,
 	     column_headers => 1,
-	     contents => { content => $uniques, },
+	     contents => $outputs,
 	     format => $format_output_selector,
 	     has_submit => $editable,
 	     has_reset => $editable,
 	     header => 'Output Selections
-<h4> Select a model and protocol, then submit. </h4>',
+<h4> Select fields of interest, then submit.
+<br> You can inspect individual outputs by clicking the hyperlinks.
+</h4>
+',
 	     hidden => {
 			session_id => $session_id_digest,
 # 			$module_name ? ( module_name => $module_name, ) : (),
@@ -319,9 +186,9 @@ sub document_output_root
 				      type => 'constant',
 				     },
 				    ],
-# 	     row_filter => sub { !ref $_[1]->{value}, },
+	     row_filter => sub { { a => $_[1], b => '', c => 0, }; },
 	     separator => '/',
-# 	     sort => sub { return $order->{$_[0]} <=> $order->{$_[1]}; },
+	     sort => sub { return $_[0] <=> $_[1] },
 # 	     submit_actions => {
 # 				'output-selector' =>
 # 				sub
@@ -366,41 +233,7 @@ sub document_output_root
 	= {
 	  };
 
-    my $render = 1;
-
-    foreach my $column (qw(
-			   0
-			   1
-			  ))
-    {
-	my $document_name = 'output-selector';
-
-	my $name = "field_${document_name}_configuration_content_$column";
-
-	my $value = $query->param($name);
-
-	if (!defined $value)
-	{
-	    $render = 0;
-
-	    last;
-	}
-
-	if ($value eq 'All')
-	{
-	    my $target = $uniques->[$column];
-
-	    #! remove 'All' entry
-
-	    $output_available_unique->{$column} = [ (@$target)[1 .. $#$target], ];
-	}
-	else
-	{
-	    $output_available_unique->{$column} = [ $value, ];
-	}
-    }
-
-    print STDERR "output_available_unique is\n" . Dumper($output_available_unique);
+    my $render = 0;
 
     if ($render)
     {
@@ -486,7 +319,7 @@ sub document_output_root
 
 					  if ($output_exists)
 					  {
-					      $result .= "<a href=\"/neurospaces_output_browser/output.cgi?schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> Outputs </font></a> &nbsp;&nbsp;&nbsp;";
+					      $result .= "<a href=\"/neurospaces_output_browser/?schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> Outputs </font></a> &nbsp;&nbsp;&nbsp;";
 					  }
 					  else
 					  {
@@ -592,16 +425,13 @@ sub document_output_root
 					       },
 			     },
 		);
-
-	my $a;
-
     }
 
     return [ $document_output_selector, (defined $document_output_available ? ($document_output_available) : ()), ];
 }
 
 
-sub formalize_output_root
+sub formalize_ssp_outputs
 {
     my $documents = shift;
 
@@ -638,21 +468,179 @@ sub main
     }
     else
     {
-	&header("Simulation Output Browser", "", undef, 1, 1, 0, '');
+	my $schedule_name = $query->param('schedule_name');
 
-	print "<hr>\n";
+	my $output_name = $query->param('output_name');
 
-	my $documents = document_output_root($ssp_directory);
+	if (!defined $output_name || $output_name eq '')
+	{
+	    &header("SSP Schedule: $schedule_name", "", undef, 1, 1, '', '', '');
 
-	my $data = documents_parse_input($documents);
+	    print "<hr>\n";
 
-	documents_merge_data($documents, $data);
+	    use YAML;
 
-	formalize_output_root($documents);
+	    my $filename = "generated__$schedule_name.yml";
 
-	# finalize (web|user)min specific stuff.
+	    my $scheduler;
 
-	&footer("index.cgi", 'Simulation Output Browser');
+	    eval
+	    {
+		local $/;
+
+		$scheduler = Load(`cat "$ssp_directory/schedules/$filename"`);
+	    };
+
+	    if ($@)
+	    {
+		my $read_error = "$0: scheduler cannot be constructed from '$filename': $@, ignoring this schedule\n";
+
+		print $read_error;
+
+		&error($read_error);
+	    }
+
+	    my $transformator
+		= Sesa::Transform->new
+		    (
+		     contents => $scheduler,
+		     name => 'simulation-output-extractor',
+		     transformators =>
+		     [
+		      sub
+		      {
+			  my ($transform_data, $context, $contents) = @_;
+
+# 			  my $top = Sesa::Transform::_context_get_current($context);
+# $top->{type} eq 'SCALAR'
+			  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
+			  {
+			      my $content = Sesa::Transform::_context_get_current_content($context);
+
+			      my $result = Sesa::Transform::_context_get_main_result($context);
+
+			      if (!$result->{content}->{outputs})
+			      {
+				  $result->{content}->{outputs} = [];
+			      }
+
+			      push
+				  @{$result->{content}->{outputs}},
+				  {
+				   component_name => $content->{component_name},
+				   field => $content->{field},
+				  };
+
+			      return;
+			  }
+		      },
+		     ],
+		    );
+
+	    my $concatenator
+		= Sesa::Transform->new
+		    (
+		     name => 'simulation-output-concatenator',
+		     source => $transformator,
+		     transformators =>
+		     [
+		      sub
+		      {
+			  my ($transform_data, $context, $contents) = @_;
+
+# 			  my $top = Sesa::Transform::_context_get_current($context);
+# $top->{type} eq 'SCALAR'
+			  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
+			  {
+			      my $content = Sesa::Transform::_context_get_current_content($context);
+
+			      my $result = Sesa::Transform::_context_get_main_result($context);
+
+			      if (!$result->{content}->{outputs})
+			      {
+				  $result->{content}->{outputs} = [];
+			      }
+
+			      push
+				  @{$result->{content}->{outputs}},
+				      $content->{component_name} . '->' . $content->{field};
+
+			      return;
+			  }
+		      },
+		     ],
+		    );
+
+	    my $count = 0;
+
+	    my $array_to_hasher
+		= Sesa::Transform->new
+		    (
+		     name => 'array_to_hasher',
+# 		     separator => '!',
+		     source => $concatenator,
+		     transformators =>
+		     [
+# 		      Sesa::Transform::_lib_transform_array_to_hash('outputs', '->{outputs}'),
+		      sub
+		      {
+			  my ($transform_data, $context, $contents) = @_;
+
+			  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
+			  {
+			      my $content = Sesa::Transform::_context_get_current_content($context);
+
+			      my $result = Sesa::Transform::_context_get_main_result($context);
+
+			      $result->{content}->{$count} = $content;
+
+			      $count++;
+
+			      return;
+			  }
+		      },
+		     ],
+		    );
+
+	    my $outputs = $array_to_hasher->transform();
+
+	    my $documents = document_ssp_outputs($outputs, $schedule_name, );
+
+	    my $data = documents_parse_input($documents);
+
+	    documents_merge_data($documents, $data);
+
+	    formalize_ssp_outputs($documents);
+
+	    # finalize (web|user)min specific stuff.
+
+	    &footer("index.cgi", 'Output Browser');
+	}
+	else
+	{
+	    &header("Output Editor", "", undef, 1, 1, '', '', '');
+
+	    print "<hr>\n";
+
+	    my ($sesa_specification, $read_error) = specification_read($schedule_name);
+
+	    if ($read_error)
+	    {
+		&error($read_error);
+	    }
+
+	    my $documents = document_ssp_schedule($sesa_specification, $schedule_name, $output_name, );
+
+	    my $data = documents_parse_input($documents);
+
+	    documents_merge_data($documents, $data);
+
+	    formalize_sesa_outputs_for_module($documents);
+
+	    # finalize (web|user)min specific stuff.
+
+	    &footer("index.cgi", 'Persistency Layer Editors', "outputs.cgi", 'Output Editor', "outputs.cgi?schedule_name=${schedule_name}", ${schedule_name});
+	}
     }
 }
 
