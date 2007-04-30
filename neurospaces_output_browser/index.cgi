@@ -303,7 +303,7 @@ sub document_output_root
 	     has_submit => $editable,
 	     has_reset => $editable,
 	     header => 'Output Selections
-<h3> Select a model and protocol, then submit </h3>',
+<h3> Select a model and protocol, then submit. </h3>',
 	     hidden => {
 			session_id => $session_id_digest,
 # 			$module_name ? ( module_name => $module_name, ) : (),
@@ -415,7 +415,7 @@ sub document_output_root
 			  $row => {
 				   map
 				   {
-				       $_ => 1,
+				       $_ => 0,
 				   }
 				   @{$output_available_unique->{1}},
 				  },
@@ -432,46 +432,93 @@ sub document_output_root
 	    = {
 	       columns => [
 			   {
+			    be_defined => 1,
 			    header => 'Model Name',
 			    key_name => undef,
 			    type => 'constant',
-			    be_defined => 1,
 			   },
 			   map
 			   {
+			       my $column_label = $output_available_unique->{1}->[$_ - 1];
+
 			       my $result
 				   = {
-				      header => $output_available_unique->{1}->[$_ - 1],
-				      key_name => $output_available_unique->{1}->[$_ - 1],
-				      type => 'checkbox',
+				      alignment => 'left',
 				      be_defined => 1,
+				      generate =>
+				      sub
+				      {
+					  my $self = shift;
+
+					  my $row_key = shift;
+
+					  my $row = shift;
+
+					  my $filter_data = shift;
+
+					  my $result = '';
+
+					  #t this can give conflicts
+
+					  my $schedule_header;
+
+					  if ($column_label =~ /FREQ/)
+					  {
+					      $schedule_header = "conceptual_parameters_$column_label";
+					  }
+					  else
+					  {
+					      $schedule_header = "current_$column_label";
+					  }
+
+					  my $schedule_exists = -r "$ssp_directory/schedules/generated__${row_key}__${schedule_header}.yml";
+
+					  if ($schedule_exists)
+					  {
+					      $result .= "<a href=\"/neurospaces_simulation_browser/?schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> SSP </font></a> &nbsp;&nbsp;&nbsp;";
+					  }
+					  else
+					  {
+					      $result .= "<font size=\"-2\" style=\"position: left: 20%;\"> No SSP </font>";
+					  }
+
+					  my $output_exists = -r "$ssp_directory/output/generated__${row_key}__${schedule_header}";
+
+					  if ($output_exists)
+					  {
+					      $result .= "<a href=\"/neurospaces_simulation_browser/?schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> Outputs </font></a> &nbsp;&nbsp;&nbsp;";
+					  }
+					  else
+					  {
+					      $result .= "<font size=\"-2\" style=\"position: left: 20%;\"> No output </font>";
+					  }
+
+					  if ($editable
+					      && $output_exists)
+					  {
+					      $result
+						  .= $self->_encapsulate_checkbox
+						      (
+						       $self->{name} . $self->{separator} . $column_label . $self->{separator} . $row_key,
+						       $_,
+						       $output_available->{$row_key}->{$column_label},
+						       {},
+						      );
+
+					  }
+					  else
+					  {
+					      $result .= '&nbsp;';
+					  }
+				      },
+				      header => $column_label,
+				      key_name => $column_label,
+				      type => 'code',
 				     };
 
 			       $result;
 			   }
 			   1 .. @{$output_available_unique->{1}},
-			  ],
-	       hashkey => 'Model Name',
-	      };
-
-	my $format_output_available2
-	    = {
-	       columns => [
-			   #! this loop automatically includes the model name column
-
-			   map
-			   {
-			       my $result
-				   = {
-				      header => $_ eq 0 ? 'Model Name' : 'Check',
-				      key_name => $output_available_unique->{1}->[$_ - 1],
-				      type => $_ eq 0 ? 'constant' : 'checkbox',
-				      be_defined => 1,
-				     };
-
-			       $result;
-			   }
-			   0 .. @{$output_available_unique->{1}},
 			  ],
 	       hashkey => 'Model Name',
 	      };
@@ -487,7 +534,9 @@ sub document_output_root
 		 has_submit => $editable,
 		 has_reset => $editable,
 		 header => 'Simulation Selections
-<h3> Select the simulations you are interested in, then submit </h3>',
+<h3> Select the simulations you are interested in, then submit.
+<br> You can inspect individual simulation parameters and output by clicking the hyperlinks.
+<br> Tip: click the middle mouse button to open the parameters or outputs in a new tab. </h3>',
 		 hidden => {
 			    session_id => $session_id_digest,
 			    # 			$module_name ? ( module_name => $module_name, ) : (),
@@ -567,7 +616,7 @@ sub main
     if (!-r $ssp_directory
         || !-r "$ssp_directory/output")
     {
-	&header('Simulation Browser and Editor', "", undef, 1, 1, '', '', '');
+	&header('Simulation Output Browser', "", undef, 1, 1, '', '', '');
 
 	print "<hr>\n";
 
