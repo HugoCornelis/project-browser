@@ -46,12 +46,6 @@ use Sesa::Access (
 						 label => 'simulation output',
 						},
 		 );
-# use Sesa::Persistency::Specification qw(
-# 					specification_get_icon
-# 					specification_get_module_directory
-# 					specification_read
-# 					specification_write
-# 				       );
 use Sesa::TableDocument;
 use Sesa::Transform;
 use Sesa::TreeDocument;
@@ -98,7 +92,7 @@ sub document_ssp_outputs
 
 		 my $result = '';
 
-		 $result .= "<a href=\"/neurospaces_simulation_browser/output.cgi?schedule_name=${schedule_name}&output_name=$row\"><font size=\"-2\" style=\"position: left: 20%;\"> plot </font></a> &nbsp;&nbsp;&nbsp;";
+		 $result .= "<a href=\"/neurospaces_output_browser/output.cgi?schedule_name=${schedule_name}&output_name=$row\"><font size=\"-2\" style=\"position: left: 20%;\"> plot </font></a> &nbsp;&nbsp;&nbsp;";
 	     },
 	    },
 	    {
@@ -443,6 +437,132 @@ sub main
 {
     $query = CGI->new();
 
+    use YAML;
+
+    my $schedule_name = $query->param('schedule_name');
+
+    my $filename = "generated__$schedule_name.yml";
+
+    my $scheduler;
+
+    eval
+    {
+	local $/;
+
+	$scheduler = Load(`cat "$ssp_directory/schedules/$filename"`);
+    };
+
+    if ($@)
+    {
+	my $read_error = "$0: scheduler cannot be constructed from '$filename': $@, ignoring this schedule\n";
+
+	print $read_error;
+
+	&error($read_error);
+    }
+
+    my $transformator
+	= Sesa::Transform->new
+	    (
+	     contents => $scheduler,
+	     name => 'simulation-output-extractor',
+	     transformators =>
+	     [
+	      sub
+	      {
+		  my ($transform_data, $context, $contents) = @_;
+
+		  # 			  my $top = Sesa::Transform::_context_get_current($context);
+		  # $top->{type} eq 'SCALAR'
+		  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
+		  {
+		      my $content = Sesa::Transform::_context_get_current_content($context);
+
+		      my $result = Sesa::Transform::_context_get_main_result($context);
+
+		      if (!$result->{content}->{outputs})
+		      {
+			  $result->{content}->{outputs} = [];
+		      }
+
+		      push
+			  @{$result->{content}->{outputs}},
+			  {
+			   component_name => $content->{component_name},
+			   field => $content->{field},
+			  };
+
+		      return;
+		  }
+	      },
+	     ],
+	    );
+
+    my $concatenator
+	= Sesa::Transform->new
+	    (
+	     name => 'simulation-output-concatenator',
+	     source => $transformator,
+	     transformators =>
+	     [
+	      sub
+	      {
+		  my ($transform_data, $context, $contents) = @_;
+
+		  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
+		  {
+		      my $content = Sesa::Transform::_context_get_current_content($context);
+
+		      my $result = Sesa::Transform::_context_get_main_result($context);
+
+		      if (!$result->{content}->{outputs})
+		      {
+			  $result->{content}->{outputs} = [];
+		      }
+
+		      push
+			  @{$result->{content}->{outputs}},
+			      $content->{component_name} . '->' . $content->{field};
+
+		      return;
+		  }
+	      },
+	     ],
+	    );
+
+    my $count = 0;
+
+    my $array_to_hasher
+	= Sesa::Transform->new
+	    (
+	     name => 'array_to_hasher',
+	     # 		     separator => '!',
+	     source => $concatenator,
+	     transformators =>
+	     [
+# 	      Sesa::Transform::_lib_transform_array_to_hash('outputs', '->{outputs}'),
+	      sub
+	      {
+		  my ($transform_data, $context, $contents) = @_;
+
+		  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
+		  {
+		      my $content = Sesa::Transform::_context_get_current_content($context);
+
+		      my $result = Sesa::Transform::_context_get_main_result($context);
+
+		      $result->{content}->{$count} = $content;
+
+		      $count++;
+
+		      return;
+		  }
+	      },
+	     ],
+	    );
+
+    my $outputs = $array_to_hasher->transform();
+
     if (!-r $ssp_directory
         || !-r "$ssp_directory/output")
     {
@@ -468,8 +588,6 @@ sub main
     }
     else
     {
-	my $schedule_name = $query->param('schedule_name');
-
 	my $output_name = $query->param('output_name');
 
 	if (!defined $output_name || $output_name eq '')
@@ -477,132 +595,6 @@ sub main
 	    &header("SSP Schedule: $schedule_name", "", undef, 1, 1, '', '', '');
 
 	    print "<hr>\n";
-
-	    use YAML;
-
-	    my $filename = "generated__$schedule_name.yml";
-
-	    my $scheduler;
-
-	    eval
-	    {
-		local $/;
-
-		$scheduler = Load(`cat "$ssp_directory/schedules/$filename"`);
-	    };
-
-	    if ($@)
-	    {
-		my $read_error = "$0: scheduler cannot be constructed from '$filename': $@, ignoring this schedule\n";
-
-		print $read_error;
-
-		&error($read_error);
-	    }
-
-	    my $transformator
-		= Sesa::Transform->new
-		    (
-		     contents => $scheduler,
-		     name => 'simulation-output-extractor',
-		     transformators =>
-		     [
-		      sub
-		      {
-			  my ($transform_data, $context, $contents) = @_;
-
-# 			  my $top = Sesa::Transform::_context_get_current($context);
-# $top->{type} eq 'SCALAR'
-			  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
-			  {
-			      my $content = Sesa::Transform::_context_get_current_content($context);
-
-			      my $result = Sesa::Transform::_context_get_main_result($context);
-
-			      if (!$result->{content}->{outputs})
-			      {
-				  $result->{content}->{outputs} = [];
-			      }
-
-			      push
-				  @{$result->{content}->{outputs}},
-				  {
-				   component_name => $content->{component_name},
-				   field => $content->{field},
-				  };
-
-			      return;
-			  }
-		      },
-		     ],
-		    );
-
-	    my $concatenator
-		= Sesa::Transform->new
-		    (
-		     name => 'simulation-output-concatenator',
-		     source => $transformator,
-		     transformators =>
-		     [
-		      sub
-		      {
-			  my ($transform_data, $context, $contents) = @_;
-
-# 			  my $top = Sesa::Transform::_context_get_current($context);
-# $top->{type} eq 'SCALAR'
-			  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
-			  {
-			      my $content = Sesa::Transform::_context_get_current_content($context);
-
-			      my $result = Sesa::Transform::_context_get_main_result($context);
-
-			      if (!$result->{content}->{outputs})
-			      {
-				  $result->{content}->{outputs} = [];
-			      }
-
-			      push
-				  @{$result->{content}->{outputs}},
-				      $content->{component_name} . '->' . $content->{field};
-
-			      return;
-			  }
-		      },
-		     ],
-		    );
-
-	    my $count = 0;
-
-	    my $array_to_hasher
-		= Sesa::Transform->new
-		    (
-		     name => 'array_to_hasher',
-# 		     separator => '!',
-		     source => $concatenator,
-		     transformators =>
-		     [
-# 		      Sesa::Transform::_lib_transform_array_to_hash('outputs', '->{outputs}'),
-		      sub
-		      {
-			  my ($transform_data, $context, $contents) = @_;
-
-			  if ($context->{path} =~ m|^[^/]*/outputs/([^/]*)$|)
-			  {
-			      my $content = Sesa::Transform::_context_get_current_content($context);
-
-			      my $result = Sesa::Transform::_context_get_main_result($context);
-
-			      $result->{content}->{$count} = $content;
-
-			      $count++;
-
-			      return;
-			  }
-		      },
-		     ],
-		    );
-
-	    my $outputs = $array_to_hasher->transform();
 
 	    my $documents = document_ssp_outputs($outputs, $schedule_name, );
 
@@ -618,24 +610,64 @@ sub main
 	}
 	else
 	{
-	    &header("Output Editor", "", undef, 1, 1, '', '', '');
+	    use PDL;
+	    use PDL::Graphics::PLplot;
+	    use Math::Trig qw [pi];
+
+	    my $pl
+		= PDL::Graphics::PLplot->new
+		    (
+		     DEV => "pbm",
+		     FILE => "../tmp/test.pbm",
+		    );
+
+	    #! + 1 for time step
+
+	    my $columns = [ 0 .. (keys %$outputs) + 1, ];
+
+	    @$columns = PDL->rcols($ssp_directory . "/output/generated__" . $schedule_name);
+
+# 	    print STDERR @$columns;
+
+# 	    my $x  = sequence(10);
+# 	    my $y  = $x**2;
+
+	    my $column_extractor = { reverse %$outputs, };
+
+	    #! + 1 for time step
+
+	    my $column = $column_extractor->{$output_name} + 1;
+
+	    $pl->xyplot($columns->[0], $columns->[$column]);
+
+	    $pl->close();
+
+	    system "convert ../tmp/test.pbm ../tmp/test.png";
+
+	    if ($?)
+	    {
+		print STDERR "system operator error: $?\n";
+	    }
+
+	    &header("Output Plotter: $output_name (column $column)", "", undef, 1, 1, '', '', '');
 
 	    print "<hr>\n";
 
-	    my ($sesa_specification, $read_error) = specification_read($schedule_name);
+# 	    my $documents = document_ssp_schedule($sesa_specification, $schedule_name, $output_name, );
 
-	    if ($read_error)
-	    {
-		&error($read_error);
-	    }
+# 	    my $data = documents_parse_input($documents);
 
-	    my $documents = document_ssp_schedule($sesa_specification, $schedule_name, $output_name, );
+# 	    documents_merge_data($documents, $data);
 
-	    my $data = documents_parse_input($documents);
+# 	    formalize_sesa_outputs_for_module($documents);
 
-	    documents_merge_data($documents, $data);
+	    print "<center>\n";
 
-	    formalize_sesa_outputs_for_module($documents);
+	    print "<img src=\"/tmp/test.png\" alt=\"a plplot image\" border=0>\n";
+
+	    print "</center>\n";
+
+	    print "<hr>\n";
 
 	    # finalize (web|user)min specific stuff.
 
