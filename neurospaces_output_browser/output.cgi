@@ -1,4 +1,3 @@
-#!/usr/bin/perl -d:ptkdb -w
 #!/usr/bin/perl -w
 #!/usr/bin/perl -d:ptkdb -w
 #
@@ -610,27 +609,24 @@ sub main
 	}
 	else
 	{
-	    use PDL;
-	    use PDL::Graphics::PLplot;
+	    use File::Temp qw/ :mktemp /;
+
 	    use Math::Trig qw [pi];
 
-	    my $pl
-		= PDL::Graphics::PLplot->new
-		    (
-		     DEV => "pbm",
-		     FILE => "../tmp/test.pbm",
-		    );
+	    use PDL;
+	    use PDL::Graphics::PLplot;
 
-	    #! + 1 for time step
+	    # get a temporary file
 
-	    my $columns = [ 0 .. (keys %$outputs) + 1, ];
+	    #t note that this is an unsafe implementation
 
-	    @$columns = PDL->rcols($ssp_directory . "/output/generated__" . $schedule_name);
+	    my $filename_pbm = mktemp("../tmp/neurospaces_output_pbm_XXXXXXXXXXXX");
 
-# 	    print STDERR @$columns;
+	    #! needed for mime types below, here needed for consistency
 
-# 	    my $x  = sequence(10);
-# 	    my $y  = $x**2;
+	    $filename_pbm .= ".pbm";
+
+	    # determine the column to extract from the output file
 
 	    my $column_extractor = { reverse %$outputs, };
 
@@ -638,11 +634,51 @@ sub main
 
 	    my $column = $column_extractor->{$output_name} + 1;
 
-	    $pl->xyplot($columns->[0], $columns->[$column]);
+	    # create plot object
+
+	    $output_name =~ /->(.*)$/;
+
+	    my $units
+		= {
+		   'Ca' => 'mol',
+		   'Gk' => 'Siemens',
+		   'Ik' => 'Current',
+		   'Vm' => 'Vm',
+		   'state_x' => 'prob.',
+		   'state_y' => 'prob.',
+		  };
+
+	    my $unit = $units->{$1} || 'Y';
+
+	    my $pl
+		= PDL::Graphics::PLplot->new
+		    (
+		     DEV => "pbm",
+		     FILE => $filename_pbm,
+		     PAGESIZE => [ 1000, 900, ],
+		     XLAB => 'Time (s)',
+		     YLAB => $unit,
+		    );
+
+	    #! + 1 for time step
+
+	    my $columns = [ 0 .. (keys %$outputs) + 1, ];
+
+	    my $output_filename = $ssp_directory . "/output/generated__" . $schedule_name;
+
+	    @$columns = PDL->rcols($output_filename, 0, $column);
+
+	    # add the extracted columns to the plot
+
+	    $pl->xyplot($columns->[0], $columns->[1]); # $columns->[$column]);
 
 	    $pl->close();
 
-	    system "convert ../tmp/test.pbm ../tmp/test.png";
+	    my $filename_png = mktemp("../tmp/neurospaces_output_png_XXXXXXXXXXXX");
+
+	    $filename_png .= ".png";
+
+	    system "convert \"$filename_pbm\" \"$filename_png\"";
 
 	    if ($?)
 	    {
@@ -663,7 +699,7 @@ sub main
 
 	    print "<center>\n";
 
-	    print "<img src=\"/tmp/test.png\" alt=\"a plplot image\" border=0>\n";
+	    print "<img src=\"$filename_png\" alt=\"a plplot image\" border=0>\n";
 
 	    print "</center>\n";
 
