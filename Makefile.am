@@ -25,6 +25,7 @@ dist-hook:
 	$(RM) -fr `find $(distdir) -name _Inline`
 	cp $(srcdir)/license.txt $(distdir)
 	cp -R $(srcdir)/docs $(distdir)
+	cp -R {Sesa,neurospaces_*,images} $(distdir)
 #	test -d $(distdir)/tests || mkdir $(distdir)/tests
 #	test -d $(distdir)/tests/specifications || mkdir $(distdir)/tests/specifications
 #	cp -R $(srcdir)/tests/run $(distdir)/tests/run
@@ -49,8 +50,13 @@ html-upload: html-upload-prepare
 
 usermindir = /usr/share/usermin
 
-usermin_HEADERS = `find {Sesa,neurospaces_*,images} -printf "%p "`
+install-exec-hook:
+	cp -R {Sesa,neurospaces_*,images} $(usermindir)
 
+#EXTRA_SCRIPTS = `find {Sesa,neurospaces_*,images} -printf "%p "`
+
+#`find {Sesa,neurospaces_*,images} -printf "%p "`
+#@USERMIN_MODULES@
 #usermindir = /usr/share/usermin
 
 #usermin_HEADERS = @USERMIN_MODULES@
