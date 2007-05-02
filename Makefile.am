@@ -46,9 +46,9 @@ html-upload-prepare:
 html-upload: html-upload-prepare
 	scp -pr html/htdocs/* hcornelis@shell.sourceforge.net:/home/groups/n/ne/neurospaces/htdocs/
 
-#t make this one configurable
+#t make this one configurable: $prefix (and distcheck) needs to work
 
-usermindir = /usr/share/usermin
+usermindir = @USERMIN_DIR@
 
 install-exec-hook:
 	cp -R {Sesa,neurospaces_*,images} $(usermindir)

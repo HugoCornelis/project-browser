@@ -40,6 +40,10 @@ USERMIN_MODULES=`find {Sesa,neurospaces_*,images} -printf "%p "`
 
 AC_SUBST(USERMIN_MODULES)
 
+USERMIN_DIR=/usr/share/usermin
+
+AC_SUBST(USERMIN_DIR)
+
 
 AC_CONFIG_FILES([ Makefile ])
 

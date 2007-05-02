@@ -21,6 +21,9 @@ but I use the debian package
 ** sudo mkdir /usr/share/usermin/tmp
 as temporary store for image plots.
 
+* Install, target machine
+** Set the usermin directory in configure.ac
+** ./configure && make && sudo make install
 
 * LCL::Aux is imported but not distributed
 Sesa::Sems
