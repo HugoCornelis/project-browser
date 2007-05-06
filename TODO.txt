@@ -1,0 +1,8 @@
+-*- outline -*-
+
+* Create a global projects directory.
+** contains directories with subprojects
+*** one of them is purkinje-comparison
+** allows subprojects to be added dynamically
+
+
