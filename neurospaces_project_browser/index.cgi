@@ -91,12 +91,14 @@ sub formalize_project
 
 	my $module_description;
 
+	my $module_configuration;
+
 	eval
 	{
-	    my $module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
-
-	    $module_description = $module_configuration->{description} || $module_name;
+	    $module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
 	};
+
+	$module_description = $module_configuration->{description} || $module_name;
 
 	#    if ($access{$subschedule})
 	{
@@ -143,8 +145,13 @@ sub formalize_project_subprojects
     {
 	#    if ($access{$subschedule})
 	{
-	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}");
-	    push(@titles, $known_subprojects->{$subproject_name} || $subproject_name);
+	    my $link_target
+		= $known_subprojects->{$subproject_name}->{link_target} ?
+		    $known_subprojects->{$subproject_name}->{link_target} . "?project_name=${project_name}"
+			: "?project_name=${project_name}&subproject_name=${subproject_name}";
+
+	    push(@links, $link_target);
+	    push(@titles, $known_subprojects->{$subproject_name}->{description} || $subproject_name);
 
 	    my $icon = 'images/icon.gif';
 
