@@ -130,18 +130,21 @@ sub formalize_project_subprojects
     my @titles;
     my @icons;
 
-    my $known_subprojects
-	= {
-	   modules => 1,
-	   morphologies => 1,
-	  };
+    my $known_subprojects;
+
+    use YAML 'LoadFile';
+
+    eval
+    {
+	$known_subprojects = LoadFile("$project_root/$project_name/configuration.yml");
+    };
 
     foreach my $subproject_name (grep { $known_subprojects->{$_} } @$all_subprojects)
     {
 	#    if ($access{$subschedule})
 	{
 	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}");
-	    push(@titles, $subproject_name);
+	    push(@titles, $known_subprojects->{$subproject_name});
 
 	    my $icon = 'images/icon.gif';
 
@@ -214,7 +217,7 @@ sub main
     }
     elsif (!$project_name)
     {
-	&header("Project Browser", "", undef, 1, 1, 0, '');
+	&header("Project Browser: All Projects", "", undef, 1, 1, 0, '');
 
 	print "<hr>\n";
 
@@ -226,7 +229,7 @@ sub main
     }
     elsif (!$subproject_name)
     {
-	&header("Project Browser", "", undef, 1, 1, 0, '');
+	&header("Project Browser: $project_name", "", undef, 1, 1, 0, '');
 
 	print "<hr>\n";
 
@@ -234,7 +237,7 @@ sub main
 
 	# finalize (web|user)min specific stuff.
 
-	&footer("index.cgi", 'Project Browser');
+	&footer("index.cgi", 'All Projects');
     }
     elsif (!$module_name)
     {
@@ -246,7 +249,7 @@ sub main
 
 	# finalize (web|user)min specific stuff.
 
-	&footer("index.cgi", 'Project Browser');
+	&footer("index.cgi?project_name=${project_name}", "Project $project_name");
     }
     else
     {
