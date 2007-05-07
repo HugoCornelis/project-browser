@@ -89,9 +89,14 @@ sub formalize_project
     {
 	use YAML 'LoadFile';
 
-	my $module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
+	my $module_description;
 
-	my $module_description = $module_configuration->{description} || $module_name;
+	eval
+	{
+	    my $module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
+
+	    $module_description = $module_configuration->{description} || $module_name;
+	};
 
 	#    if ($access{$subschedule})
 	{
@@ -128,6 +133,7 @@ sub formalize_project_subprojects
     my $known_subprojects
 	= {
 	   modules => 1,
+	   morphologies => 1,
 	  };
 
     foreach my $subproject_name (grep { $known_subprojects->{$_} } @$all_subprojects)
