@@ -54,7 +54,9 @@ use Sesa::Workflow;
 my $query;
 
 
-my $ssp_directory = '/local_home/local_home/hugo/neurospaces_project/purkinje-comparison';
+my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
+
+my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "purkinje-comparison/modules/1";
 
 
 sub document_ssp_outputs

@@ -1,6 +1,9 @@
-# $Id: submodules.pl,v 1.3 2005/06/13 15:41:03 hco Exp $
+#!/usr/bin/perl -w
+#
 
-my $ssp_directory = '/local_home/local_home/hugo/neurospaces_project/purkinje-comparison';
+my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
+
+my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "purkinje-comparison/modules/1";
 
 
 my $ssp_schedules = [ grep { /^\w+$/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/"`, ];
