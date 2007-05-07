@@ -42,7 +42,7 @@ use Sesa::Sems qw(
 use Sesa::Access (
 		  neurospaces_project_browser => {
 						  level => (our $editable = 1 && \$editable),
-						  label => 'projects, project modes and project modules',
+						  label => 'projects, subprojects and project modules',
 						 },
 		 );
 # use Sesa::Persistency::Specification qw(
@@ -64,7 +64,7 @@ my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
 
 my $project_name = $query->param('project_name');
 
-my $mode_name = $query->param('mode_name');
+my $subproject_name = $query->param('subproject_name');
 
 my $module_name = $query->param('module_name');
 
@@ -73,13 +73,13 @@ sub formalize_project
 {
     my $project_name = shift;
 
-    my $mode_name = shift;
+    my $subproject_name = shift;
 
     my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
 
     # get all information from the database
 
-    my $all_modules = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name/$mode_name"`, ];
+    my $all_modules = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name/$subproject_name"`, ];
 
     my @links;
     my @titles;
@@ -89,7 +89,7 @@ sub formalize_project
     {
 	#    if ($access{$subschedule})
 	{
-	    push(@links, "?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}");
+	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}&module_name=${module_name}");
 	    push(@titles, $module_name);
 
 	    my $icon = 'images/icon.gif';
@@ -105,7 +105,7 @@ sub formalize_project
 }
 
 
-sub formalize_project_modes
+sub formalize_project_subprojects
 {
     my $project_name = shift;
 
@@ -113,23 +113,23 @@ sub formalize_project_modes
 
     # get all information from the database
 
-    my $all_modes = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name"`, ];
+    my $all_subprojects = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name"`, ];
 
     my @links;
     my @titles;
     my @icons;
 
-    my $known_modes
+    my $known_subprojects
 	= {
 	   modules => 1,
 	  };
 
-    foreach my $mode_name (grep { $known_modes->{$_} } @$all_modes)
+    foreach my $subproject_name (grep { $known_subprojects->{$_} } @$all_subprojects)
     {
 	#    if ($access{$subschedule})
 	{
-	    push(@links, "?project_name=${project_name}&mode_name=${mode_name}");
-	    push(@titles, $mode_name);
+	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}");
+	    push(@titles, $subproject_name);
 
 	    my $icon = 'images/icon.gif';
 
@@ -212,13 +212,13 @@ sub main
 
 	&footer("index.cgi", 'Project Browser');
     }
-    elsif (!$mode_name)
+    elsif (!$subproject_name)
     {
 	&header("Project Browser", "", undef, 1, 1, 0, '');
 
 	print "<hr>\n";
 
-	formalize_project_modes($project_name);
+	formalize_project_subprojects($project_name);
 
 	# finalize (web|user)min specific stuff.
 
@@ -230,7 +230,7 @@ sub main
 
 	print "<hr>\n";
 
-	formalize_project($project_name, $mode_name);
+	formalize_project($project_name, $subproject_name);
 
 	# finalize (web|user)min specific stuff.
 
@@ -245,7 +245,7 @@ sub main
 	foreach my $argument_name (
 				   qw(
 				      project_name
-				      mode_name
+				      subproject_name
 				      module_name
 				     )
 				  )

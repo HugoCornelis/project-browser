@@ -5,11 +5,11 @@ my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
 
 my $project_name = $query->param('project_name');
 
-my $mode_name = $query->param('mode_name');
+my $subproject_name = $query->param('subproject_name');
 
 my $module_name = $query->param('module_name');
 
-my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "$project_name/$mode_name/$module_name";
+my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "$project_name/$subproject_name/$module_name";
 
 
 my $ssp_schedules = [ grep { /^\w+$/ } map { chomp; $_; } `/bin/ls -1 "$ssp_directory/"`, ];

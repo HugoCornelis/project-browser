@@ -62,11 +62,11 @@ my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
 
 my $project_name = $query->param('project_name');
 
-my $mode_name = $query->param('mode_name');
+my $subproject_name = $query->param('subproject_name');
 
 my $module_name = $query->param('module_name');
 
-my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "$project_name/$mode_name/$module_name";
+my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "$project_name/$subproject_name/$module_name";
 
 
 sub document_ssp_schedule
@@ -214,7 +214,7 @@ sub document_ssp_schedule
 	     header => $header,
 	     hidden => {
 			$project_name ? ( project_name => $project_name, ) : (),
-			$mode_name ? ( mode_name => $mode_name, ) : (),
+			$subproject_name ? ( subproject_name => $subproject_name, ) : (),
 			$module_name ? ( module_name => $module_name, ) : (),
 		       },
 	     name => 'column-specification',
@@ -296,7 +296,7 @@ sub formalize_ssp_root
     {
 	#    if ($access{$subschedule})
 	{
-	    push(@links, "?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${schedule}");
+	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}&module_name=${module_name}&schedule_name=${schedule}");
 	    push(@titles, $schedule);
 
 	    my $icon = 'images/ssp32x32.png';
@@ -338,7 +338,7 @@ sub main
 	&footer("/", $::text{'index'});
     }
     elsif (!$project_name
-	   || !$mode_name
+	   || !$subproject_name
 	   || !$module_name)
     {
 	my $url = "/neurospaces_project_browser/?";
@@ -348,7 +348,7 @@ sub main
 	foreach my $argument_name (
 				   qw(
 				      project_name
-				      mode_name
+				      subproject_name
 				      module_name
 				     )
 				  )
@@ -450,7 +450,7 @@ sub main
 
 		# finalize (web|user)min specific stuff.
 
-		&footer("index.cgi", 'Persistency Layer Editors', "schedules.cgi", 'Schedule Editor', "schedules.cgi?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${schedule_name}", ${schedule_name});
+		&footer("index.cgi", 'Persistency Layer Editors', "schedules.cgi", 'Schedule Editor', "schedules.cgi?project_name=${project_name}&subproject_name=${subproject_name}&module_name=${module_name}&schedule_name=${schedule_name}", ${schedule_name});
 	    }
 	}
     }
