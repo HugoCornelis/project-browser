@@ -64,7 +64,7 @@ my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
 
 my $project_name = $query->param('project_name');
 
-my $mode_name = $query->param('mode_name') || 'modules';
+my $mode_name = $query->param('mode_name');
 
 my $module_name = $query->param('module_name');
 
@@ -91,6 +91,45 @@ sub formalize_project
 	{
 	    push(@links, "?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}");
 	    push(@titles, $module_name);
+
+	    my $icon = 'images/icon.gif';
+
+	    push(@icons, $icon, );
+	}
+    }
+
+    &icons_table(\@links, \@titles, \@icons);
+
+    print "<hr>" ;
+
+}
+
+
+sub formalize_project_modes
+{
+    my $project_name = shift;
+
+    my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
+
+    # get all information from the database
+
+    my $all_modes = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name"`, ];
+
+    my @links;
+    my @titles;
+    my @icons;
+
+    my $known_modes
+	= {
+	   modules => 1,
+	  };
+
+    foreach my $mode_name (grep { $known_modes->{$_} } @$all_modes)
+    {
+	#    if ($access{$subschedule})
+	{
+	    push(@links, "?project_name=${project_name}&mode_name=${mode_name}");
+	    push(@titles, $mode_name);
 
 	    my $icon = 'images/icon.gif';
 
@@ -161,28 +200,6 @@ sub main
 
 	&footer("/", $::text{'index'});
     }
-    elsif (!$mode_name)
-    {
-	&header('Project Browser and Editor', "", undef, 1, 1, '', '', '');
-
-	print "<hr>\n";
-
-	print "<center>\n";
-
-	print "<H3>The mode_name is not defined.</H3>";
-
-	print "<p>\n";
-
-	print "This is an internal error\n";
-
-	print "</center>\n";
-
-	print "<hr>\n";
-
-	# finalize (web|user)min specific stuff.
-
-	&footer("/", $::text{'index'});
-    }
     elsif (!$project_name)
     {
 	&header("Project Browser", "", undef, 1, 1, 0, '');
@@ -190,6 +207,18 @@ sub main
 	print "<hr>\n";
 
 	formalize_project_root();
+
+	# finalize (web|user)min specific stuff.
+
+	&footer("index.cgi", 'Project Browser');
+    }
+    elsif (!$mode_name)
+    {
+	&header("Project Browser", "", undef, 1, 1, 0, '');
+
+	print "<hr>\n";
+
+	formalize_project_modes($project_name);
 
 	# finalize (web|user)min specific stuff.
 
