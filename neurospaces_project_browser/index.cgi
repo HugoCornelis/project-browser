@@ -144,7 +144,7 @@ sub formalize_project_subprojects
 	#    if ($access{$subschedule})
 	{
 	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}");
-	    push(@titles, $known_subprojects->{$subproject_name});
+	    push(@titles, $known_subprojects->{$subproject_name} || $subproject_name);
 
 	    my $icon = 'images/icon.gif';
 
