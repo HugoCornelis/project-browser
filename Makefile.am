@@ -52,6 +52,7 @@ usermindir = @USERMIN_DIR@
 
 install-exec-hook:
 	cp -R {Sesa,neurospaces_*,images} $(usermindir)
+	$(RM) /etc/usermin/module.infos.cache
 
 #EXTRA_SCRIPTS = `find {Sesa,neurospaces_*,images} -printf "%p "`
 

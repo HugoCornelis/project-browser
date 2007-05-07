@@ -715,8 +715,8 @@ sub _formalize_array
 				       (
 					$a,
 					$b,
-					$contents->{$a},
-					$contents->{$b},
+# 					$contents->{$a},
+# 					$contents->{$b},
 					$context,
 				       )
 					   : -1;
@@ -768,6 +768,15 @@ sub _formalize_array
     # remove this column
 
     _context_pop($context);
+
+    # if this is an empty array
+
+    if (!@$contents)
+    {
+	# formalize as an empty array
+
+	$str .= $self->_formalize_any($context, '[]');
+    }
 
     return($str);
 }
@@ -1019,6 +1028,15 @@ sub _formalize_hash
     # remove this column
 
     _context_pop($context);
+
+    # if this is an empty hash
+
+    if (!keys %$contents)
+    {
+	# formalize as an empty array
+
+	$str .= $self->_formalize_any($context, '{}');
+    }
 
     return($str);
 }

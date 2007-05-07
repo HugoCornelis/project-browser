@@ -1,0 +1,5 @@
+category=neurospaces
+longdesc=readcell2ndf convertor configuration.
+desc=readcell2ndf
+name=Neurospaces/readcell2ndf
+version=1.270
