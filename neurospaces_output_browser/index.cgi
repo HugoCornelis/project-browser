@@ -57,12 +57,18 @@ use Sesa::TreeDocument;
 use Sesa::Workflow;
 
 
-my $query;
+my $query = CGI->new();
 
 
 my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
 
-my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "purkinje-comparison/modules/1";
+my $project_name = $query->param('project_name');
+
+my $mode_name = $query->param('mode_name');
+
+my $module_name = $query->param('module_name');
+
+my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "$project_name/$mode_name/$module_name";
 
 
 sub document_output_root
@@ -308,8 +314,9 @@ sub document_output_root
 <h4> Select a model and protocol, then submit. </h4>',
 	     hidden => {
 			session_id => $session_id_digest,
-# 			$module_name ? ( module_name => $module_name, ) : (),
-# 			$submodule_name ? ( submodule_name => $submodule_name, ) : (),
+			$project_name ? ( project_name => $project_name, ) : (),
+			$mode_name ? ( mode_name => $mode_name, ) : (),
+			$module_name ? ( module_name => $module_name, ) : (),
 		       },
 	     name => 'output-selector',
 	     output_mode => 'html',
@@ -477,7 +484,7 @@ sub document_output_root
 
 					  if ($schedule_exists)
 					  {
-					      $result .= "<a href=\"/neurospaces_simulation_browser/?schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> SSP </font></a> &nbsp;&nbsp;&nbsp;";
+					      $result .= "<a href=\"/neurospaces_simulation_browser/?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> SSP </font></a> &nbsp;&nbsp;&nbsp;";
 					  }
 					  else
 					  {
@@ -488,7 +495,7 @@ sub document_output_root
 
 					  if ($output_exists)
 					  {
-					      $result .= "<a href=\"/neurospaces_output_browser/output.cgi?schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> Outputs </font></a> &nbsp;&nbsp;&nbsp;";
+					      $result .= "<a href=\"/neurospaces_output_browser/output.cgi?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> Outputs </font></a> &nbsp;&nbsp;&nbsp;";
 					  }
 					  else
 					  {
@@ -535,14 +542,15 @@ sub document_output_root
 		 format => $format_output_available,
 		 has_submit => $editable,
 		 has_reset => $editable,
-		 header => 'Simulation Selections
+		 header => 'Raw Simulation Output
 <h4> Select the simulations you are interested in, then submit.
-<br> You can inspect individual simulation parameters and output by clicking the hyperlinks.
+<br> You can inspect individual simulation parameters and raw output by clicking the hyperlinks.
 <br> Tip: click the middle mouse button to open the parameters or outputs in a new tab. </h4>',
 		 hidden => {
 			    session_id => $session_id_digest,
-			    # 			$module_name ? ( module_name => $module_name, ) : (),
-			    # 			$submodule_name ? ( submodule_name => $submodule_name, ) : (),
+			    $project_name ? ( project_name => $project_name, ) : (),
+			    $mode_name ? ( mode_name => $mode_name, ) : (),
+			    $module_name ? ( module_name => $module_name, ) : (),
 			   },
 		 name => 'output-available',
 		 output_mode => 'html',
@@ -613,10 +621,8 @@ sub formalize_output_root
 
 sub main
 {
-    $query = CGI->new();
-
     if (!-r $ssp_directory
-        || !-r "$ssp_directory/output")
+        || !-r "$ssp_directory")
     {
 	&header('Simulation Output Browser', "", undef, 1, 1, '', '', '');
 
@@ -628,7 +634,7 @@ sub main
 
 	print "<p>\n";
 
-	print "$ssp_directory/output not found\n";
+	print "$ssp_directory not found\n";
 
 	print "</center>\n";
 
@@ -637,6 +643,34 @@ sub main
 	# finalize (web|user)min specific stuff.
 
 	&footer("/", $::text{'index'});
+    }
+    elsif (!$project_name
+	   || !$mode_name
+	   || !$module_name)
+    {
+	my $url = "/neurospaces_project_browser/?";
+
+	my $args = [];
+
+	foreach my $argument_name (
+				   qw(
+				      project_name
+				      mode_name
+				      module_name
+				     )
+				  )
+	{
+	    my $value = eval "\$$argument_name";
+
+	    if ($value)
+	    {
+		push @$args, "$argument_name=$value";
+	    }
+	}
+
+	$url .= join '&', @$args;
+
+	&redirect($url, 'Project Browser');
     }
     else
     {

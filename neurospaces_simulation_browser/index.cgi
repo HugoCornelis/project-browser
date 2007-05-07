@@ -55,12 +55,18 @@ use Sesa::TreeDocument;
 use Sesa::Workflow;
 
 
-my $query;
+my $query = CGI->new();
 
 
 my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
 
-my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "purkinje-comparison/modules/1";
+my $project_name = $query->param('project_name');
+
+my $mode_name = $query->param('mode_name');
+
+my $module_name = $query->param('module_name');
+
+my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "$project_name/$mode_name/$module_name";
 
 
 sub document_ssp_schedule
@@ -207,8 +213,9 @@ sub document_ssp_schedule
 	     has_reset => $editable == 2,
 	     header => $header,
 	     hidden => {
-			$schedule_name ? ( schedule_name => $schedule_name, ) : (),
-			$subschedule_name ? ( subschedule_name => $subschedule_name, ) : (),
+			$project_name ? ( project_name => $project_name, ) : (),
+			$mode_name ? ( mode_name => $mode_name, ) : (),
+			$module_name ? ( module_name => $module_name, ) : (),
 		       },
 	     name => 'column-specification',
 	     output_mode => 'html',
@@ -289,7 +296,7 @@ sub formalize_ssp_root
     {
 	#    if ($access{$subschedule})
 	{
-	    push(@links, "?schedule_name=${schedule}");
+	    push(@links, "?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${schedule}");
 	    push(@titles, $schedule);
 
 	    my $icon = 'images/ssp32x32.png';
@@ -307,10 +314,8 @@ sub formalize_ssp_root
 
 sub main
 {
-    $query = CGI->new();
-
     if (!-r $ssp_directory
-	|| !-r "$ssp_directory/schedules")
+	|| !-r "$ssp_directory")
     {
 	&header('Simulation Browser and Editor', "", undef, 1, 1, '', '', '');
 
@@ -322,7 +327,7 @@ sub main
 
 	print "<p>\n";
 
-	print "$ssp_directory/schedules not found\n";
+	print "$ssp_directory not found\n";
 
 	print "</center>\n";
 
@@ -331,6 +336,34 @@ sub main
 	# finalize (web|user)min specific stuff.
 
 	&footer("/", $::text{'index'});
+    }
+    elsif (!$project_name
+	   || !$mode_name
+	   || !$module_name)
+    {
+	my $url = "/neurospaces_project_browser/?";
+
+	my $args = [];
+
+	foreach my $argument_name (
+				   qw(
+				      project_name
+				      mode_name
+				      module_name
+				     )
+				  )
+	{
+	    my $value = eval "\$$argument_name";
+
+	    if ($value)
+	    {
+		push @$args, "$argument_name=$value";
+	    }
+	}
+
+	$url .= join '&', @$args;
+
+	&redirect($url, 'Project Browser');
     }
     else
     {
@@ -417,7 +450,7 @@ sub main
 
 		# finalize (web|user)min specific stuff.
 
-		&footer("index.cgi", 'Persistency Layer Editors', "schedules.cgi", 'Schedule Editor', "schedules.cgi?schedule_name=${schedule_name}", ${schedule_name});
+		&footer("index.cgi", 'Persistency Layer Editors', "schedules.cgi", 'Schedule Editor', "schedules.cgi?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${schedule_name}", ${schedule_name});
 	    }
 	}
     }

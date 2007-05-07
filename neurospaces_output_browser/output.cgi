@@ -51,12 +51,20 @@ use Sesa::TreeDocument;
 use Sesa::Workflow;
 
 
-my $query;
+my $query = CGI->new();
 
+
+# https://localhost:20000/neurospaces_output_browser/output.cgi?project_name=purkinje-comparison&mode_name=modules&module_name=1&schedule_name=Purk2M9s__conceptual_parameters_FREQUENCY_10_0.5
 
 my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
 
-my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "purkinje-comparison/modules/1";
+my $project_name = $query->param('project_name');
+
+my $mode_name = $query->param('mode_name');
+
+my $module_name = $query->param('module_name');
+
+my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "$project_name/$mode_name/$module_name";
 
 
 sub document_ssp_outputs
@@ -93,7 +101,7 @@ sub document_ssp_outputs
 
 		 my $result = '';
 
-		 $result .= "<a href=\"/neurospaces_output_browser/output.cgi?schedule_name=${schedule_name}&output_name=$row\"><font size=\"-2\" style=\"position: left: 20%;\"> plot </font></a> &nbsp;&nbsp;&nbsp;";
+		 $result .= "<a href=\"/neurospaces_output_browser/output.cgi?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${schedule_name}&output_name=$row\"><font size=\"-2\" style=\"position: left: 20%;\"> plot </font></a> &nbsp;&nbsp;&nbsp;";
 	     },
 	    },
 	    {
@@ -142,7 +150,7 @@ sub document_ssp_outputs
 			  },
 			  {
 			   label => "Simulation Schedule",
-			   target => "/neurospaces_simulation_browser/?schedule_name=$schedule_name",
+			   target => "/neurospaces_simulation_browser/?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${schedule_name}",
 			  },
 			 ],
 	     },
@@ -168,8 +176,9 @@ sub document_ssp_outputs
 ',
 	     hidden => {
 			session_id => $session_id_digest,
-# 			$module_name ? ( module_name => $module_name, ) : (),
-# 			$submodule_name ? ( submodule_name => $submodule_name, ) : (),
+			$project_name ? ( project_name => $project_name, ) : (),
+			$mode_name ? ( mode_name => $mode_name, ) : (),
+			$module_name ? ( module_name => $module_name, ) : (),
 		       },
 	     name => 'output-selector',
 	     output_mode => 'html',
@@ -303,7 +312,7 @@ sub document_ssp_outputs
 
 					  if ($schedule_exists)
 					  {
-					      $result .= "<a href=\"/neurospaces_simulation_browser/?schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> SSP </font></a> &nbsp;&nbsp;&nbsp;";
+					      $result .= "<a href=\"/neurospaces_simulation_browser/?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> SSP </font></a> &nbsp;&nbsp;&nbsp;";
 					  }
 					  else
 					  {
@@ -314,7 +323,7 @@ sub document_ssp_outputs
 
 					  if ($output_exists)
 					  {
-					      $result .= "<a href=\"/neurospaces_output_browser/?schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> Outputs </font></a> &nbsp;&nbsp;&nbsp;";
+					      $result .= "<a href=\"/neurospaces_output_browser/?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> Outputs </font></a> &nbsp;&nbsp;&nbsp;";
 					  }
 					  else
 					  {
@@ -367,8 +376,9 @@ sub document_ssp_outputs
 <br> Tip: click the middle mouse button to open the parameters or outputs in a new tab. </h4>',
 		 hidden => {
 			    session_id => $session_id_digest,
-			    # 			$module_name ? ( module_name => $module_name, ) : (),
-			    # 			$submodule_name ? ( submodule_name => $submodule_name, ) : (),
+			    $project_name ? ( project_name => $project_name, ) : (),
+			    $mode_name ? ( mode_name => $mode_name, ) : (),
+			    $module_name ? ( module_name => $module_name, ) : (),
 			   },
 		 name => 'output-available',
 		 output_mode => 'html',
@@ -436,8 +446,6 @@ sub formalize_ssp_outputs
 
 sub main
 {
-    $query = CGI->new();
-
     use YAML;
 
     my $schedule_name = $query->param('schedule_name');
@@ -565,7 +573,7 @@ sub main
     my $outputs = $array_to_hasher->transform();
 
     if (!-r $ssp_directory
-        || !-r "$ssp_directory/output")
+        || !-r "$ssp_directory")
     {
 	&header('Simulation Output Browser', "", undef, 1, 1, '', '', '');
 
@@ -577,7 +585,7 @@ sub main
 
 	print "<p>\n";
 
-	print "$ssp_directory/output not found\n";
+	print "$ssp_directory not found\n";
 
 	print "</center>\n";
 
@@ -586,6 +594,34 @@ sub main
 	# finalize (web|user)min specific stuff.
 
 	&footer("/", $::text{'index'});
+    }
+    elsif (!$project_name
+	   || !$mode_name
+	   || !$module_name)
+    {
+	my $url = "/neurospaces_project_browser/?";
+
+	my $args = [];
+
+	foreach my $argument_name (
+				   qw(
+				      project_name
+				      mode_name
+				      module_name
+				     )
+				  )
+	{
+	    my $value = eval "\$$argument_name";
+
+	    if ($value)
+	    {
+		push @$args, "$argument_name=$value";
+	    }
+	}
+
+	$url .= join '&', @$args;
+
+	&redirect($url, 'Project Browser');
     }
     else
     {
@@ -709,7 +745,7 @@ sub main
 
 	    # finalize (web|user)min specific stuff.
 
-	    &footer("index.cgi", 'Persistency Layer Editors', "outputs.cgi", 'Output Editor', "outputs.cgi?schedule_name=${schedule_name}", ${schedule_name});
+	    &footer("index.cgi", 'Persistency Layer Editors', "outputs.cgi", 'Output Editor', "outputs.cgi?project_name=${project_name}&mode_name=${mode_name}&module_name=${module_name}&schedule_name=${schedule_name}", ${schedule_name});
 	}
     }
 }
