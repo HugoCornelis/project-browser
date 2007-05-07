@@ -87,10 +87,16 @@ sub formalize_project
 
     foreach my $module_name (@$all_modules)
     {
+	use YAML 'LoadFile';
+
+	my $module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
+
+	my $module_description = $module_configuration->{description} || $module_name;
+
 	#    if ($access{$subschedule})
 	{
 	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}&module_name=${module_name}");
-	    push(@titles, $module_name);
+	    push(@titles, $module_description);
 
 	    my $icon = 'images/icon.gif';
 
