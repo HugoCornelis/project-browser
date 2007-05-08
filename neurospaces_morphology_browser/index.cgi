@@ -62,16 +62,74 @@ my $query = CGI->new();
 
 my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
 
+my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
+
 my $project_name = $query->param('project_name');
 
 my $morphology_name = $query->param('morphology_name');
+
+my $operation_name = $query->param('operation_name');
+
+
+my $all_operations;
+
+if ($project_name)
+{
+    # get all information from the database
+
+    use YAML 'LoadFile';
+
+    eval
+    {
+	$all_operations = LoadFile("$project_root/$project_name/morphologies/configuration.yml");
+    };
+
+    #t command line options need to come from the global config or something, don't know yet.
+
+    my $channel_names
+	= {
+	   cap => 'P type Calcium',
+	   cat => 'T type Calcium',
+	   h => 'Anomalous Rectifier',
+	   k2 => 'Small Ca Dependent Potassium',
+	   kC => 'Large Ca Dependent Potassium',
+	   kdr => 'Delayed Rectifier',
+	   km => 'Muscarinic Potassium',
+	   naf => 'Fast Sodium',
+	   nap => 'Persistent Sodium',
+	  };
+
+    $all_operations
+	||= {
+	     (
+	      map
+	      {
+		  $_ => {
+			 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field GMAX --condition '\$d->{context} =~ /$_/i' 2>&1",
+			 description => "$channel_names->{$_} Densities",
+			};
+	      }
+	      keys %$channel_names,
+	     ),
+	     synchans => {
+			  command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --spine Purk_spine --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
+			  description => "Synaptic Channels",
+			 },
+	     lengths => {
+			 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field LENGTH --type segment 2>&1",
+			 description => "Compartment Lengths",
+			},
+	     somatopetals => {
+			      command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field SOMATOPETAL_DISTANCE --type segment 2>&1",
+			      description => "Somatopetal Lengths",
+			     },
+	    };
+}
 
 
 sub formalize_morphologies
 {
     my $project_name = shift;
-
-    my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
 
     # get all information from the database
 
@@ -128,43 +186,58 @@ sub formalize_morphology
 
     my $morphology_name = shift;
 
-    my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
-
-    # get all information from the database
-
-    my $all_subprojects = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name"`, ];
-
     my @links;
     my @titles;
     my @icons;
 
-    my $known_subprojects;
-
-    use YAML 'LoadFile';
-
-    eval
+    foreach my $operation_name (sort keys %$all_operations)
     {
-	$known_subprojects = LoadFile("$project_root/$project_name/configuration.yml");
-    };
+	my $link_target = $all_operations->{$operation_name}->{link_target} || $operation_name;
 
-    foreach my $subproject_name (grep { $known_subprojects->{$_} } @$all_subprojects)
-    {
-	#    if ($access{$subschedule})
-	{
-	    my $link_target = $known_subprojects->{$subproject_name}->{link_target} || $subproject_name;
+	my $link = "?project_name=${project_name}&morphology_name=${morphology_name}&operation_name=${link_target}";
 
-	    my $link = "?project_name=${project_name}&subproject_name=${link_target}";
+	push(@links, $link);
+	push(@titles, $all_operations->{$operation_name}->{description} || $operation_name);
 
-	    push(@links, $link);
-	    push(@titles, $known_subprojects->{$subproject_name}->{description} || $subproject_name);
+	my $icon = $all_operations->{$operation_name}->{icon} || 'images/icon.gif';
 
-	    my $icon = 'images/icon.gif';
-
-	    push(@icons, $icon, );
-	}
+	push(@icons, $icon, );
     }
 
     &icons_table(\@links, \@titles, \@icons);
+
+    print "<hr>" ;
+
+}
+
+
+sub formalize_operation
+{
+    my $project_name = shift;
+
+    my $morphology_name = shift;
+
+    my $operation_name = shift;
+
+    my $command = $all_operations->{$operation_name}->{command};
+
+    print "<code>\n";
+
+    print "Executing:\n$command\n";
+
+    print "</code>\n";
+
+    print "<pre>\n";
+
+    my $output = `$command`;
+
+    my $count = ($output =~ tr/\n/\n/);
+
+    print "$count lines of output\n";
+
+    print $output;
+
+    print "</pre>\n";
 
     print "<hr>" ;
 
@@ -197,25 +270,9 @@ sub main
     }
     elsif (!$project_name)
     {
-	&header('Morphology Browser', "", undef, 1, 1, '', '', '');
+	my $url = "/neurospaces_project_browser/";
 
-	print "<hr>\n";
-
-	print "<center>\n";
-
-	print "<h3>No Project Name defined, please return to the project browser.</h3>";
-
-	print "<p>\n";
-
-	print "$neurospaces_config->{simulation_browser}->{root_directory} not found\n";
-
-	print "</center>\n";
-
-	print "<hr>\n";
-
-	# finalize (web|user)min specific stuff.
-
-	&footer("/", $::text{'index'}, "/neurospaces_project_browser/", 'All Projects');
+	&redirect($url, 'Project Browser');
     }
     elsif (!$morphology_name)
     {
@@ -229,13 +286,25 @@ sub main
 
 	&footer("/", $::text{'index'}, "/neurospaces_project_browser/?project_name=${project_name}", 'This Project', "/neurospaces_project_browser/", 'All Projects');
     }
-    else
+    elsif (!$operation_name)
     {
 	&header("Morphology Browser: $morphology_name", "", undef, 1, 1, 0, '');
 
 	print "<hr>\n";
 
 	formalize_morphology($project_name, $morphology_name);
+
+	# finalize (web|user)min specific stuff.
+
+	&footer("index.cgi?project_name=${project_name}", "All Morphologies");
+    }
+    else
+    {
+	&header("Morphology Browser: $morphology_name", "", undef, 1, 1, 0, '');
+
+	print "<hr>\n";
+
+	formalize_operation($project_name, $morphology_name, $operation_name);
 
 	# finalize (web|user)min specific stuff.
 
