@@ -113,7 +113,7 @@ if ($project_name)
 	     ),
 	     synchans => {
 			  command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --spine Purk_spine --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
-			  description => "Synaptic Channels",
+			  description => "Excitatory Synaptic Channels",
 			 },
 	     lengths => {
 			 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field LENGTH --type segment 2>&1",
@@ -123,6 +123,10 @@ if ($project_name)
 			      command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field SOMATOPETAL_DISTANCE --type segment 2>&1",
 			      description => "Somatopetal Lengths",
 			     },
+	     spines => {
+			command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --algorithm Spines 2>&1",
+			description => "Spines instance algorithm",
+		       },
 	    };
 }
 
