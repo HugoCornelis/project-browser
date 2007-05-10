@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
 
-my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
+my $neurospaces_config = do '/etc/neurospaces/neurospaces.config';
 
 my $project_name = $query->param('project_name');
 

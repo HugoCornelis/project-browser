@@ -60,7 +60,7 @@ use Sesa::Workflow;
 my $query = CGI->new();
 
 
-my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
+my $neurospaces_config = do '/etc/neurospaces/neurospaces.config';
 
 my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
 
@@ -119,14 +119,34 @@ if ($project_name)
 			 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field LENGTH --type segment 2>&1",
 			 description => "Compartment Lengths",
 			},
+	     lengths_cumulated => {
+				   command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field LENGTH --type '^T_sym_segment\$' --cumulate 2>&1",
+				   description => "Cumulated Compartment Length",
+				  },
+	     lengths_spiny_cumulated => {
+					 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --traversal / --type '^T_sym_segment\$' --condition 'SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18' --reporting-field LENGTH --cumulate",
+					 description => "Cumulated spiny compartment lengths",
+					},
 	     somatopetals => {
 			      command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field SOMATOPETAL_DISTANCE --type segment 2>&1",
 			      description => "Somatopetal Lengths",
 			     },
+	     surface_spiny_cumulated => {
+					 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --traversal / --type '^T_sym_segment\$' --condition 'SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18' --reporting-field SURFACE --cumulate",
+					 description => "Cumulated spiny compartment surface",
+					},
 	     spines => {
 			command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --algorithm Spines 2>&1",
 			description => "Spines instance algorithm",
 		       },
+	     totalsurface => {
+			      command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --traversal / --type '^T_sym_cell\$' --reporting-field TOTALSURFACE",
+			      description => "Total dendritic surface",
+			     },
+	     totalsurface2 => {
+			       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --cumulate",
+			       description => "Total dendritic surface (2)",
+			      },
 	    };
 }
 

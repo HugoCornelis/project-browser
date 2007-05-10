@@ -56,7 +56,7 @@ my $query = CGI->new();
 
 # https://localhost:20000/neurospaces_output_browser/output.cgi?project_name=purkinje-comparison&subproject_name=modules&module_name=1&schedule_name=Purk2M9s__conceptual_parameters_FREQUENCY_10_0.5
 
-my $neurospaces_config = do '/var/neurospaces/neurospaces.config';
+my $neurospaces_config = do '/etc/neurospaces/neurospaces.config';
 
 my $project_name = $query->param('project_name');
 
