@@ -58,7 +58,9 @@ use Sesa::Workflow;
 my $query = CGI->new();
 
 
-my $neurospaces_config = do '/etc/neurospaces/neurospaces.config';
+use YAML 'LoadFile';
+
+my $neurospaces_config = LoadFile('/etc/neurospaces/readcell2ndf/readcell2ndf.yml');
 
 
 sub document_readcell2ndf_configuration
@@ -100,7 +102,7 @@ sub main
 
 	print "<center>\n";
 
-	print "<H3>The configuration cannot be found in '/etc/neurospaces/neurospaces.config'.</H3>";
+	print "<H3>The configuration cannot be found in '/etc/neurospaces/readcell2ndf/readcell2ndf.yml'.</H3>";
 
 	print "<p>\n";
 

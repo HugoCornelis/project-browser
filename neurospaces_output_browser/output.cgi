@@ -56,7 +56,9 @@ my $query = CGI->new();
 
 # https://localhost:20000/neurospaces_output_browser/output.cgi?project_name=purkinje-comparison&subproject_name=modules&module_name=1&schedule_name=Purk2M9s__conceptual_parameters_FREQUENCY_10_0.5
 
-my $neurospaces_config = do '/etc/neurospaces/neurospaces.config';
+use YAML 'LoadFile';
+
+my $neurospaces_config = LoadFile('/etc/neurospaces/project_browser/project_browser.yml');
 
 my $project_name = $query->param('project_name');
 
@@ -64,7 +66,7 @@ my $subproject_name = $query->param('subproject_name');
 
 my $module_name = $query->param('module_name');
 
-my $ssp_directory = $neurospaces_config->{simulation_browser}->{root_directory} . "$project_name/$subproject_name/$module_name";
+my $ssp_directory = $neurospaces_config->{project_browser}->{root_directory} . "$project_name/$subproject_name/$module_name";
 
 
 sub document_ssp_outputs

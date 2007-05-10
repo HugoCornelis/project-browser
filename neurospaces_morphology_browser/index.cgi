@@ -60,9 +60,11 @@ use Sesa::Workflow;
 my $query = CGI->new();
 
 
-my $neurospaces_config = do '/etc/neurospaces/neurospaces.config';
+use YAML 'LoadFile';
 
-my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
+my $neurospaces_config = LoadFile('/etc/neurospaces/project_browser/project_browser.yml');
+
+my $project_root = $neurospaces_config->{project_browser}->{root_directory};
 
 my $project_name = $query->param('project_name');
 
@@ -270,7 +272,7 @@ sub formalize_operation
 
 sub main
 {
-    if (!-r $neurospaces_config->{simulation_browser}->{root_directory})
+    if (!-r $project_root)
     {
 	&header('Morphology Browser', "", undef, 1, 1, '', '', '');
 
@@ -282,7 +284,7 @@ sub main
 
 	print "<p>\n";
 
-	print "$neurospaces_config->{simulation_browser}->{root_directory} not found\n";
+	print "$project_root not found\n";
 
 	print "</center>\n";
 

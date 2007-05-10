@@ -60,7 +60,9 @@ use Sesa::Workflow;
 my $query = CGI->new();
 
 
-my $neurospaces_config = do '/etc/neurospaces/neurospaces.config';
+use YAML 'LoadFile';
+
+my $neurospaces_config = LoadFile('/etc/neurospaces/project_browser/project_browser.yml');
 
 my $project_name = $query->param('project_name');
 
@@ -68,14 +70,14 @@ my $subproject_name = $query->param('subproject_name');
 
 my $module_name = $query->param('module_name');
 
+my $project_root = $neurospaces_config->{project_browser}->{root_directory};
+
 
 sub formalize_project
 {
     my $project_name = shift;
 
     my $subproject_name = shift;
-
-    my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
 
     # get all information from the database
 
@@ -122,8 +124,6 @@ sub formalize_project_subprojects
 {
     my $project_name = shift;
 
-    my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
-
     # get all information from the database
 
     my $all_subprojects = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name"`, ];
@@ -168,8 +168,6 @@ sub formalize_project_subprojects
 
 sub formalize_project_root
 {
-    my $project_root = $neurospaces_config->{simulation_browser}->{root_directory};
-
     # get all information from the database
 
     my $all_projects = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root"`, ];
@@ -200,7 +198,7 @@ sub formalize_project_root
 
 sub main
 {
-    if (!-r $neurospaces_config->{simulation_browser}->{root_directory})
+    if (!-r $project_root)
     {
 	&header('Project Browser and Editor', "", undef, 1, 1, '', '', '');
 
@@ -212,7 +210,7 @@ sub main
 
 	print "<p>\n";
 
-	print "$neurospaces_config->{simulation_browser}->{root_directory} not found\n";
+	print "$project_root not found\n";
 
 	print "</center>\n";
 
