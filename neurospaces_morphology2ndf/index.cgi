@@ -38,10 +38,10 @@ use Sesa::Sems qw(
 		 );
 
 use Sesa::Access (
-		  neurospaces_readcell2ndf => {
-					       level => (our $editable = 1 && \$editable),
-					       label => 'ssp schedules and their output',
-					      },
+		  neurospaces_morphology2ndf => {
+						 level => (our $editable = 1 && \$editable),
+						 label => 'ssp schedules and their output',
+						},
 		 );
 # use Sesa::Persistency::Specification qw(
 # 					specification_get_icon
@@ -60,21 +60,21 @@ my $query = CGI->new();
 
 use YAML 'LoadFile';
 
-my $neurospaces_config = LoadFile('/etc/neurospaces/readcell2ndf/readcell2ndf.yml');
+my $neurospaces_config = LoadFile('/etc/neurospaces/morphology2ndf/morphology2ndf.yml');
 
 
-sub document_readcell2ndf_configuration
+sub document_morphology2ndf_configuration
 {
-    my $header = "readcell2ndf configuration";
+    my $header = "morphology2ndf configuration";
 
     my $document_schedules
 	= Sesa::TreeDocument->new
 	    (
 	     CGI => $query,
 	     center => 1,
-	     contents => $neurospaces_config->{readcell2ndf},
+	     contents => $neurospaces_config->{morphology2ndf},
 	     header => $header,
-	     name => 'readcell2ndf',
+	     name => 'morphology2ndf',
 	     output_mode => 'html',
  	     sort => sub { return $_[0] cmp $_[1]; },
 	    );
@@ -83,7 +83,7 @@ sub document_readcell2ndf_configuration
 }
 
 
-sub formalize_readcell2ndf_configuration
+sub formalize_morphology2ndf_configuration
 {
     my $documents = shift;
 
@@ -94,15 +94,15 @@ sub formalize_readcell2ndf_configuration
 sub main
 {
     if (!$neurospaces_config
-	|| !$neurospaces_config->{readcell2ndf})
+	|| !$neurospaces_config->{morphology2ndf})
     {
-	&header('readcell2ndf configuration', "", undef, 1, 1, '', '', '');
+	&header('morphology2ndf configuration', "", undef, 1, 1, '', '', '');
 
 	print "<hr>\n";
 
 	print "<center>\n";
 
-	print "<H3>The configuration cannot be found in '/etc/neurospaces/readcell2ndf/readcell2ndf.yml'.</H3>";
+	print "<H3>The configuration cannot be found in '/etc/neurospaces/morphology2ndf/morphology2ndf.yml'.</H3>";
 
 	print "<p>\n";
 
@@ -116,17 +116,17 @@ sub main
     }
     else
     {
-	&header("readcell2ndf configuration", "", undef, 1, 1, '', '', '');
+	&header("morphology2ndf configuration", "", undef, 1, 1, '', '', '');
 
 	print "<hr>\n";
 
-	my $documents = document_readcell2ndf_configuration();
+	my $documents = document_morphology2ndf_configuration();
 
 	my $data = documents_parse_input($documents);
 
 	documents_merge_data($documents, $data);
 
-	formalize_readcell2ndf_configuration($documents);
+	formalize_morphology2ndf_configuration($documents);
 
 	# finalize (web|user)min specific stuff.
 

@@ -147,8 +147,8 @@ sub formalize_project_subprojects
 	{
 	    my $link_target
 		= $known_subprojects->{$subproject_name}->{link_target} ?
-		    $known_subprojects->{$subproject_name}->{link_target} . "?project_name=${project_name}"
-			: "?project_name=${project_name}&subproject_name=${subproject_name}";
+		    $known_subprojects->{$subproject_name}->{link_target} . "?project_name=${project_name}&subproject_name=${subproject_name}"
+			: "$project_root/$project_name/$subproject_name";
 
 	    push(@links, $link_target);
 	    push(@titles, $known_subprojects->{$subproject_name}->{description} || $subproject_name);

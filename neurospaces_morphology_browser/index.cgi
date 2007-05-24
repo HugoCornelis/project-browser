@@ -75,18 +75,9 @@ my $operation_name = $query->param('operation_name');
 
 my $all_operations;
 
-if ($project_name)
+if ($project_name && $morphology_name)
 {
-    # get all information from the database
-
-    use YAML 'LoadFile';
-
-    eval
-    {
-	$all_operations = LoadFile("$project_root/$project_name/morphologies/configuration.yml");
-    };
-
-    #t command line options need to come from the global config or something, don't know yet.
+    #t the channel names should be coming from a library of from a project local configuration file.
 
     my $channel_names
 	= {
@@ -102,54 +93,66 @@ if ($project_name)
 	  };
 
     $all_operations
-	||= {
-	     (
-	      map
-	      {
-		  $_ => {
-			 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field GMAX --condition '\$d->{context} =~ /$_/i' 2>&1",
-			 description => "$channel_names->{$_} Densities",
-			};
-	      }
-	      keys %$channel_names,
-	     ),
-	     synchans => {
-			  command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --spine Purk_spine --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
-			  description => "Excitatory Synaptic Channels",
-			 },
-	     lengths => {
-			 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field LENGTH --type segment 2>&1",
-			 description => "Compartment Lengths",
-			},
-	     lengths_cumulated => {
-				   command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field LENGTH --type '^T_sym_segment\$' --cumulate 2>&1",
-				   description => "Cumulated Compartment Length",
-				  },
-	     lengths_spiny_cumulated => {
-					 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --traversal / --type '^T_sym_segment\$' --condition 'SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18' --reporting-field LENGTH --cumulate",
-					 description => "Cumulated spiny compartment lengths",
-					},
-	     somatopetals => {
-			      command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --traversal-symbol / --reporting-field SOMATOPETAL_DISTANCE --type segment 2>&1",
-			      description => "Somatopetal Lengths",
-			     },
-	     surface_spiny_cumulated => {
-					 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --traversal / --type '^T_sym_segment\$' --condition 'SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18' --reporting-field SURFACE --cumulate",
-					 description => "Cumulated spiny compartment surface",
-					},
-	     spines => {
-			command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --algorithm Spines 2>&1",
-			description => "Spines instance algorithm",
+	= {
+	   (
+	    map
+	    {
+		$_ => {
+		       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field GMAX --condition '\$d->{context} =~ /$_/i' 2>&1",
+		       description => "$channel_names->{$_} Densities",
+		      };
+	    }
+	    keys %$channel_names,
+	   ),
+	   synchans => {
+			command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
+			description => "Excitatory Synaptic Channels",
 		       },
-	     totalsurface => {
-			      command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --traversal / --type '^T_sym_cell\$' --reporting-field TOTALSURFACE",
-			      description => "Total dendritic surface",
-			     },
-	     totalsurface2 => {
-			       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --shrinkage 1.111111 --spine Purk_spine --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --cumulate",
-			       description => "Total dendritic surface (2)",
-			      },
-	    };
+	   lengths => {
+		       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library  --traversal-symbol / --reporting-field LENGTH --type segment 2>&1",
+		       description => "Compartment Lengths",
+		      },
+	   lengths_cumulated => {
+				 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field LENGTH --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i' --cumulate 2>&1",
+				 description => "Cumulated Compartment Length (no spines)",
+				},
+	   lengths_spiny_cumulated => {
+				       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field LENGTH --cumulate 2>&1",
+				       description => "Cumulated spiny compartment lengths",
+				      },
+	   somatopetals => {
+			    command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field SOMATOPETAL_DISTANCE --type segment 2>&1",
+			    description => "Somatopetal Lengths",
+			   },
+	   surface_spiny_cumulated => {
+				       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field SURFACE --cumulate 2>&1",
+				       description => "Cumulated spiny compartment surface",
+				      },
+	   spines => {
+		      command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --algorithm Spines 2>&1",
+		      description => "Spines instance algorithm",
+		     },
+	   totalsurface => {
+			    command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_cell\$' --reporting-field TOTALSURFACE 2>&1",
+			    description => "Total dendritic surface",
+			   },
+	   totalsurface2 => {
+			     command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --cumulate 2>&1",
+			     description => "Total dendritic surface (2)",
+			    },
+	  };
+
+    # get project local information
+
+    #t should be in a subdirectory and depend on the cgi $query params ?
+
+    use YAML 'LoadFile';
+
+    eval
+    {
+	$all_operations ||= LoadFile("$project_root/$project_name/morphologies/configuration.yml");
+    };
+
 }
 
 
