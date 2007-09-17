@@ -112,6 +112,10 @@ if ($project_name && $morphology_name)
 		       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library  --traversal-symbol / --reporting-field LENGTH --type segment 2>&1",
 		       description => "Compartment Lengths",
 		      },
+	   dias => {
+		    command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library  --traversal-symbol / --reporting-field DIA --type segment 2>&1",
+		    description => "Compartment Diameters",
+		   },
 	   lengths_cumulated => {
 				 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field LENGTH --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i' --cumulate 2>&1",
 				 description => "Cumulated Compartment Length (no spines)",
