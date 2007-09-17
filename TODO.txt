@@ -1,2 +1,6 @@
 -*- outline -*-
 
+* When no simulations in a simulation module have been run,
+There should be an appropriate message.
+
+
