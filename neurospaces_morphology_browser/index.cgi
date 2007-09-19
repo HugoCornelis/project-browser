@@ -117,11 +117,11 @@ if ($project_name && $morphology_name)
 		    description => "Compartment Diameters",
 		   },
 	   lengths_cumulated => {
-				 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field LENGTH --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i' --cumulate 2>&1",
+				 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field LENGTH --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i' --operator cumulate 2>&1",
 				 description => "Cumulated Compartment Length (no spines)",
 				},
 	   lengths_spiny_cumulated => {
-				       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field LENGTH --cumulate 2>&1",
+				       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field LENGTH --operator cumulate 2>&1",
 				       description => "Cumulated spiny compartment lengths",
 				      },
 	   somatopetals => {
@@ -129,7 +129,7 @@ if ($project_name && $morphology_name)
 			    description => "Somatopetal Lengths",
 			   },
 	   surface_spiny_cumulated => {
-				       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field SURFACE --cumulate 2>&1",
+				       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field SURFACE --operator cumulate 2>&1",
 				       description => "Cumulated spiny compartment surface",
 				      },
 	   spines => {
@@ -141,7 +141,7 @@ if ($project_name && $morphology_name)
 			    description => "Total dendritic surface",
 			   },
 	   totalsurface2 => {
-			     command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --cumulate 2>&1",
+			     command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --operator cumulate 2>&1",
 			     description => "Total dendritic surface (2)",
 			    },
 	  };
