@@ -98,50 +98,50 @@ if ($project_name && $morphology_name)
 	    map
 	    {
 		$_ => {
-		       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field GMAX --condition '\$d->{context} =~ /$_/i' 2>&1",
+		       command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal-symbol / --reporting-field GMAX --condition '\$d->{context} =~ /$_/i' 2>&1",
 		       description => "$channel_names->{$_} Densities",
 		      };
 	    }
 	    keys %$channel_names,
 	   ),
 	   synchans => {
-			command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
+			command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
 			description => "Excitatory Synaptic Channels",
 		       },
 	   lengths => {
-		       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library  --traversal-symbol / --reporting-field LENGTH --type segment 2>&1",
+		       command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library  --traversal-symbol / --reporting-field LENGTH --type segment 2>&1",
 		       description => "Compartment Lengths",
 		      },
 	   dias => {
-		    command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library  --traversal-symbol / --reporting-field DIA --type segment 2>&1",
+		    command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library  --traversal-symbol / --reporting-field DIA --type segment 2>&1",
 		    description => "Compartment Diameters",
 		   },
 	   lengths_cumulated => {
-				 command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field LENGTH --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i' --operator cumulate 2>&1",
+				 command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal-symbol / --reporting-field LENGTH --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i' --operator cumulate 2>&1",
 				 description => "Cumulated Compartment Length (no spines)",
 				},
 	   lengths_spiny_cumulated => {
-				       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field LENGTH --operator cumulate 2>&1",
+				       command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field LENGTH --operator cumulate 2>&1",
 				       description => "Cumulated spiny compartment lengths",
 				      },
 	   somatopetals => {
-			    command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal-symbol / --reporting-field SOMATOPETAL_DISTANCE --type segment 2>&1",
+			    command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal-symbol / --reporting-field SOMATOPETAL_DISTANCE --type segment 2>&1",
 			    description => "Somatopetal Lengths",
 			   },
 	   surface_spiny_cumulated => {
-				       command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field SURFACE --operator cumulate 2>&1",
+				       command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_segment\$' --condition '\$d->{context} !~ /_spine/i && SwiggableNeurospaces::symbol_parameter_resolve_value(\$d->{_symbol}, \"DIA\", \$d->{_context}) < 3.18e-6' --reporting-field SURFACE --operator cumulate 2>&1",
 				       description => "Cumulated spiny compartment surface",
 				      },
 	   spines => {
-		      command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --algorithm Spines 2>&1",
+		      command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --algorithm Spines 2>&1",
 		      description => "Spines instance algorithm",
 		     },
 	   totalsurface => {
-			    command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_cell\$' --reporting-field TOTALSURFACE 2>&1",
+			    command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_cell\$' --reporting-field TOTALSURFACE 2>&1",
 			    description => "Total dendritic surface",
 			   },
 	   totalsurface2 => {
-			     command => "neurospaces $project_root/$project_name/morphologies/$morphology_name --force-library --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --operator cumulate 2>&1",
+			     command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --operator cumulate 2>&1",
 			     description => "Total dendritic surface (2)",
 			    },
 	  };
@@ -166,7 +166,7 @@ sub formalize_morphologies
 
     # get all information from the database
 
-    my $all_morphologies = [ sort map { chomp; $_; } `find "$project_root/$project_name/morphologies" -name "*.ndf" -o -name "*.p"`, ];
+    my $all_morphologies = [ sort map { chomp; $_; } `find "$project_root/$project_name/morphologies" -name "*.ndf" -o -name "*.p" -o -iname "*.swc"`, ];
 
     my @links;
     my @titles;
