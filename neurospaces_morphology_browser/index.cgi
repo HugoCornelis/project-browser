@@ -70,6 +70,15 @@ my $project_name = $query->param('project_name');
 
 my $morphology_name = $query->param('morphology_name');
 
+my $morphology_name_short = $morphology_name;
+
+if (defined $morphology_name_short)
+{
+    $morphology_name_short =~ s/.*\///;
+
+    $morphology_name_short =~ s((.*)\..*$)(/$1);
+}
+
 my $operation_name = $query->param('operation_name');
 
 
@@ -136,6 +145,10 @@ if ($project_name && $morphology_name)
 		      command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --algorithm Spines 2>&1",
 		      description => "Spines instance algorithm",
 		     },
+	   tips => {
+		    command => "echo 'segmentertips $morphology_name_short' | neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --query 2>&1",
+		    description => "Dendritic tips",
+		   },
 	   totalsurface => {
 			    command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_cell\$' --reporting-field TOTALSURFACE 2>&1",
 			    description => "Total dendritic surface",
