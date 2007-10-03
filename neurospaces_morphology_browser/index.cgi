@@ -179,7 +179,18 @@ sub formalize_morphologies
 
     # get all information from the database
 
-    my $all_morphologies = [ sort map { chomp; $_; } `find "$project_root/$project_name/morphologies" -name "*.ndf" -o -name "*.p" -o -iname "*.swc"`, ];
+    use Neurospaces::Project::Modules::Morphology 'all_morphologies';
+
+#     my $all_morphologies = [ sort map { chomp; $_; } `find "$project_root/$project_name/morphologies" -name "*.ndf" -o -name "*.p" -o -iname "*.swc"`, ];
+
+    my $all_morphologies
+	= all_morphologies
+	    (
+	     {
+	      name => $project_name,
+	      root => $project_root,
+	     },
+	    );
 
     my @links;
     my @titles;
