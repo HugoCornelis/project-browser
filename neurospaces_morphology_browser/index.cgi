@@ -113,6 +113,12 @@ if ($project_name && $morphology_name)
 	    }
 	    keys %$channel_names,
 	   ),
+	   morphology => {
+			  #! argument to --show is serial for display
+
+			  command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --show 2 --protocol none 2>&1",
+			  description => "Morphology",
+			 },
 	   synchans => {
 			command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
 			description => "Excitatory Synaptic Channels",
