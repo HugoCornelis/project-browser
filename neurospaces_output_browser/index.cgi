@@ -64,18 +64,106 @@ use YAML 'LoadFile';
 
 my $neurospaces_config = LoadFile('/etc/neurospaces/project_browser/project_browser.yml');
 
+my $project_root = $neurospaces_config->{project_browser}->{root_directory};
+
 my $project_name = $query->param('project_name');
 
 my $subproject_name = $query->param('subproject_name');
 
 my $module_name = $query->param('module_name');
 
-my $ssp_directory = $neurospaces_config->{project_browser}->{root_directory} . "$project_name/$subproject_name/$module_name";
+my $command_name = $query->param('command_name');
+
+my $ssp_directory = $project_root . "$project_name/$subproject_name/$module_name";
 
 
 sub document_output_root
 {
     my $ssp_directory = shift;
+
+    # load module specifics
+
+    use YAML 'LoadFile';
+
+    my $module_description;
+
+    my $module_configuration;
+
+    eval
+    {
+	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
+    };
+
+    my $header = $module_configuration->{description} || $module_name;
+
+    print STDERR "header is $header\n";
+
+    print "<center><h3>$header</h3></center>\n";
+
+    print "<hr>" ;
+
+    # check if a module command was called
+
+    print STDERR "checking for command name\n";
+
+    if ($command_name)
+    {
+	print STDERR "checking for command name, found $command_name\n";
+
+	# first map the commands to a hash
+
+	my $module_commands = $module_configuration->{commands} || [];
+
+	my $commands
+	    = {
+	       map
+	       {
+		   ( $_->{name} => $_->{command} );
+	       }
+	       @$module_commands,
+	      };
+
+	print STDERR "module_commands is:\n" . Dumper($commands);
+
+	# get command to execute
+
+	my $command = $commands->{$command_name};
+
+	$command =~ s/\$project_root/$project_root/g;
+	$command =~ s/\$project_name/$project_name/g;
+
+	system "$command&";
+    }
+
+    # get all commands specific to this module
+
+    {
+	my @links;
+	my @titles;
+	my @icons;
+
+	my $module_commands = $module_configuration->{commands} || [];
+
+	foreach my $command (@$module_commands)
+	{
+	    my $command_name = $command->{name};
+	    my $command_description = $command->{description};
+
+	    #    if ($access{$command})
+	    {
+		push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}&module_name=${module_name}&command_name=$command_name");
+		push(@titles, $command_description);
+
+		my $icon = 'images/icon.gif';
+
+		push(@icons, $icon, );
+	    }
+	}
+
+	&icons_table(\@links, \@titles, \@icons);
+
+	print "<hr>" ;
+    }
 
     # get all information from the database
 
