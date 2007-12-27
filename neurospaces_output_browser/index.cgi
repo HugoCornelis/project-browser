@@ -132,7 +132,7 @@ sub document_output_root
 	$command =~ s/\$project_root/$project_root/g;
 	$command =~ s/\$project_name/$project_name/g;
 
-	system "$command&";
+	system "$command &";
     }
 
     # get all commands specific to this module
