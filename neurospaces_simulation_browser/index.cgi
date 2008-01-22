@@ -433,6 +433,8 @@ sub main
 		{
 		    # startup the studio for this schedule
 
+# 		    my $output = `sudo -u hugo bash -c 'export DISPLAY=:0.0 && echo $ssp_directory && export "NEUROSPACES_PROJECT_MODELS=$ssp_directory/../../models" && cd "$ssp_directory" && ssp --daemonize --neurospaces-studio "$ssp_directory/schedules/$filename" 2>&1'`;
+
 		    my $output = `export DISPLAY=:0.0 && echo $ssp_directory && export "NEUROSPACES_PROJECT_MODELS=$ssp_directory/../../models" && cd "$ssp_directory" && ssp --daemonize --neurospaces-studio "$ssp_directory/schedules/$filename" 2>&1`;
 
 		    print "<pre>$output\n</pre>";
