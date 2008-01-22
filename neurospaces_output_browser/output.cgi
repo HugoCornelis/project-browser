@@ -315,6 +315,8 @@ sub document_ssp_outputs
 					  if ($schedule_exists)
 					  {
 					      $result .= "<a href=\"/neurospaces_simulation_browser/?project_name=${project_name}&subproject_name=${subproject_name}&module_name=${module_name}&schedule_name=${row_key}__${schedule_header}\"><font size=\"-2\" style=\"position: left: 20%;\"> SSP </font></a> &nbsp;&nbsp;&nbsp;";
+
+					      $result .= "<a href=\"/neurospaces_simulation_browser/?project_name=${project_name}&subproject_name=${subproject_name}&module_name=${module_name}&schedule_name=${row_key}__${schedule_header}&action_name=model\"><font size=\"-2\" style=\"position: left: 20%;\"> Model </font></a> &nbsp;&nbsp;&nbsp;";
 					  }
 					  else
 					  {

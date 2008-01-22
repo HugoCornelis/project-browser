@@ -70,6 +70,8 @@ my $module_name = $query->param('module_name');
 
 my $ssp_directory = $neurospaces_config->{project_browser}->{root_directory} . "$project_name/$subproject_name/$module_name";
 
+my $action_name = $query->param('action_name');
+
 
 sub document_ssp_schedule
 {
@@ -417,13 +419,24 @@ sub main
 		    &error($read_error);
 		}
 
-		my $documents = document_ssp_schedule($scheduler, $schedule_name, );
+		if ($action_name ne 'model')
+		{
+		    my $documents = document_ssp_schedule($scheduler, $schedule_name, );
 
-		my $data = documents_parse_input($documents);
+		    my $data = documents_parse_input($documents);
 
-		documents_merge_data($documents, $data);
+		    documents_merge_data($documents, $data);
 
-		formalize_sesa_schedules_for_module($documents);
+		    formalize_sesa_schedules_for_module($documents);
+		}
+		else
+		{
+		    # startup the studio for this schedule
+
+		    my $output = `export DISPLAY=:0.0 && echo $ssp_directory && export "NEUROSPACES_PROJECT_MODELS=$ssp_directory/../../models" && cd "$ssp_directory" && ssp --daemonize --neurospaces-studio "$ssp_directory/schedules/$filename" 2>&1`;
+
+		    print "<pre>$output\n</pre>";
+		}
 
 		# finalize (web|user)min specific stuff.
 
