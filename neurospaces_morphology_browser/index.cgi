@@ -86,6 +86,8 @@ my $operation_name = $query->param('operation_name');
 my $command_name = $query->param('command_name');
 
 
+my $all_operations_structured;
+
 my $all_operations;
 
 if ($project_name && $morphology_name)
@@ -105,7 +107,26 @@ if ($project_name && $morphology_name)
 	   nap => 'Persistent Sodium',
 	  };
 
-    $all_operations
+    my $aggregator_operations
+	= {
+	   (
+	    map
+	    {
+		"SURFACE_" . $_ => {
+				    command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --operator $_ 2>&1",
+				    description => "$_ of segment SURFACE",
+				   };
+	    }
+	    qw(
+	       average
+	       cumulate
+	       maximum
+	       minimum
+	      ),
+	   ),
+	  };
+
+    my $channel_operations
 	= {
 	   (
 	    map
@@ -117,6 +138,10 @@ if ($project_name && $morphology_name)
 	    }
 	    keys %$channel_names,
 	   ),
+	  };
+
+    my $morphology_operations
+	= {
 	   morphology => {
 			  #! argument to --show is serial for display
 
@@ -167,6 +192,20 @@ if ($project_name && $morphology_name)
 			     command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --operator cumulate 2>&1",
 			     description => "Total dendritic surface (2)",
 			    },
+	  };
+
+    $all_operations_structured
+	= {
+	   aggregator_operations => $aggregator_operations,
+	   channel_operations => $channel_operations,
+	   morphology_operations => $morphology_operations,
+	  };
+
+    $all_operations
+	= {
+	   %$aggregator_operations,
+	   %$channel_operations,
+	   %$morphology_operations,
 	  };
 
     # get project local information
@@ -345,23 +384,30 @@ sub formalize_morphology
     my @titles;
     my @icons;
 
-    foreach my $operation_name (sort keys %$all_operations)
+    foreach my $operation_group_name (sort keys %$all_operations_structured)
     {
-	my $link_target = $all_operations->{$operation_name}->{link_target} || $operation_name;
+	my $operation_group = $all_operations_structured->{$operation_group_name};
 
-	my $link = "?project_name=${project_name}&morphology_name=${morphology_name}&operation_name=${link_target}";
+	print "<h2>$operation_group_name</h2>" ;
 
-	push(@links, $link);
-	push(@titles, $all_operations->{$operation_name}->{description} || $operation_name);
+	foreach my $operation_name (sort keys %$operation_group)
+	{
+	    my $link_target = $all_operations->{$operation_name}->{link_target} || $operation_name;
 
-	my $icon = $all_operations->{$operation_name}->{icon} || 'images/icon.gif';
+	    my $link = "?project_name=${project_name}&morphology_name=${morphology_name}&operation_name=${link_target}";
 
-	push(@icons, $icon, );
+	    push(@links, $link);
+	    push(@titles, $all_operations->{$operation_name}->{description} || $operation_name);
+
+	    my $icon = $all_operations->{$operation_name}->{icon} || 'images/icon.gif';
+
+	    push(@icons, $icon, );
+	}
+
+	&icons_table(\@links, \@titles, \@icons);
+
+	print "<hr>" ;
     }
-
-    &icons_table(\@links, \@titles, \@icons);
-
-    print "<hr>" ;
 
 }
 
