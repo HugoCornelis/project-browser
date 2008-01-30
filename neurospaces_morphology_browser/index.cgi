@@ -112,16 +112,23 @@ if ($project_name && $morphology_name)
 	   (
 	    map
 	    {
-		"SURFACE_" . $_ => {
-				    command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_segment\$' --reporting-field SURFACE --operator $_ 2>&1",
-				    description => "$_ of segment SURFACE",
-				   };
+		/^(.*?)__(.*)$/;
+
+		my $field = $1;
+
+		my $operator = $2;
+
+		$_ => {
+		       command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_segment\$' --reporting-field $field --operator $operator 2>&1",
+		       description => "$field $operator of segments",
+		      };
 	    }
 	    qw(
-	       average
-	       cumulate
-	       maximum
-	       minimum
+	       DIA__length_average
+	       DIA__maximum
+	       DIA__minimum
+	       SURFACE__cumulate
+	       VOLUME__cumulate
 	      ),
 	   ),
 	  };
@@ -140,14 +147,20 @@ if ($project_name && $morphology_name)
 	   ),
 	  };
 
-    my $morphology_operations
+    my $other_operations
 	= {
-	   morphology => {
-			  #! argument to --show is serial for display
+	   morphology_visualizer => {
+				     #! argument to --show is serial for display
 
-			  command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --show 2 --protocol none 2>&1",
-			  description => "Morphology",
-			 },
+				     command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --show 2 --protocol none 2>&1",
+				     description => "Morphology Visualizer",
+				    },
+	   morphology_explorer => {
+				   #! argument to --show is serial for display
+
+				   command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --gui 2>&1",
+				   description => "Morphology Explorer",
+				  },
 	   synchans => {
 			command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
 			description => "Excitatory Synaptic Channels",
@@ -198,14 +211,14 @@ if ($project_name && $morphology_name)
 	= {
 	   aggregator_operations => $aggregator_operations,
 	   channel_operations => $channel_operations,
-	   morphology_operations => $morphology_operations,
+	   other_operations => $other_operations,
 	  };
 
     $all_operations
 	= {
 	   %$aggregator_operations,
 	   %$channel_operations,
-	   %$morphology_operations,
+	   %$other_operations,
 	  };
 
     # get project local information
@@ -380,13 +393,13 @@ sub formalize_morphology
 
     my $morphology_name = shift;
 
-    my @links;
-    my @titles;
-    my @icons;
-
     foreach my $operation_group_name (sort keys %$all_operations_structured)
     {
 	my $operation_group = $all_operations_structured->{$operation_group_name};
+
+	my @links;
+	my @titles;
+	my @icons;
 
 	print "<h2>$operation_group_name</h2>" ;
 
