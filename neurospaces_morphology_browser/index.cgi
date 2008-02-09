@@ -119,7 +119,7 @@ if ($project_name && $morphology_name)
 		my $operator = $2;
 
 		$_ => {
-		       command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_segment\$' --reporting-field $field --operator $operator 2>&1",
+		       command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --no-use-library --traversal / --type '^T_sym_segment\$' --reporting-field $field --operator $operator 2>&1",
 		       description => "$field $operator of segments",
 		      };
 	    }
@@ -127,6 +127,7 @@ if ($project_name && $morphology_name)
 	       DIA__length_average
 	       DIA__maximum
 	       DIA__minimum
+	       LENGTH__cumulate
 	       SURFACE__cumulate
 	       VOLUME__cumulate
 	      ),
@@ -155,12 +156,18 @@ if ($project_name && $morphology_name)
 				     command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --show 2 --protocol none 2>&1",
 				     description => "Morphology Visualizer",
 				    },
-	   morphology_explorer => {
-				   #! argument to --show is serial for display
+	   morphology_explorer_activated => {
+					     #! argument to --show is serial for display
 
-				   command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --gui 2>&1",
-				   description => "Morphology Explorer",
-				  },
+					     command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --gui 2>&1",
+					     description => "Morphology Explorer, Activated Morphology",
+					    },
+	   morphology_explorer_passive => {
+					   #! argument to --show is serial for display
+
+					   command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --no-use-library --gui 2>&1",
+					   description => "Morphology Explorer, Passive Morphology",
+					  },
 	   synchans => {
 			command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal-symbol / --condition '\$d->{context} =~ m(par/exp)i' 2>&1",
 			description => "Excitatory Synaptic Channels",
