@@ -1,5 +1,13 @@
 -*- outline -*-
 
+* Add a new neurospaces_* module
+** Add the directories to the source tree
+Including directories for images etc.  The makefiles will pick them up
+automatically.
+** In Webmin/Usermin Configuration/Available Modules
+Enable the new module.
+This modifies the file /etc/usermin/webmin.acl
+
 * Install, developer machine
 ** Copy the usermin modules to the usermin module directory
 ** rm -f /etc/usermin/module.infos.cache
