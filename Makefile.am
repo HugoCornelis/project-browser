@@ -8,7 +8,7 @@
 ##'
 ##' Neurospacesweb: visualize neuronal simulations and their results.
 ##'
-##' Copyright (C) 2007 Hugo Cornelis, hugo.cornelis@gmail.com
+##' Copyright (C) 2007-2008 Hugo Cornelis, hugo.cornelis@gmail.com
 ##'
 ##############################################################################
 

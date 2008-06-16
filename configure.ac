@@ -8,7 +8,7 @@ dnl //////////////////////////////////////////////////////////////////////////
 dnl
 dnl Neuroweb: visualize neuronal simulations and their results.
 dnl
-dnl Copyright (C) 2007 Hugo Cornelis, hugo.cornelis@gmail.com
+dnl Copyright (C) 2007-2008 Hugo Cornelis, hugo.cornelis@gmail.com
 dnl
 dnl //////////////////////////////////////////////////////////////////////////
 
