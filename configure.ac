@@ -1,12 +1,12 @@
 dnl
-dnl Neuroweb: visualize neuronal simulations and their results.
+dnl Neurospaces project browser: define projects, and explore results.
 dnl
 dnl $Id: configure.in 1.27 Sat, 21 Apr 2007 21:39:05 -0500 hugo $
 dnl
 
 dnl //////////////////////////////////////////////////////////////////////////
 dnl
-dnl Neuroweb: visualize neuronal simulations and their results.
+dnl Neurospaces project browser: define projects, and explore results.
 dnl
 dnl Copyright (C) 2007-2008 Hugo Cornelis, hugo.cornelis@gmail.com
 dnl
