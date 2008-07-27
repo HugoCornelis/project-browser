@@ -85,7 +85,7 @@ sub formalize_project
 
     # get all information from the database
 
-    my $all_channels_configuration = YAML::LoadFile("$project_root/$project_name/$subproject_name/configuration.yml");
+    my $all_channels_configuration = YAML::LoadFile("$project_root/$project_name/$subproject_name/descriptor.yml");
 
     my @links;
     my @titles;
@@ -131,7 +131,7 @@ sub formalize_project_channel
 
     # get all information from the database
 
-    my $all_channels_configuration = YAML::LoadFile("$project_root/$project_name/$subproject_name/configuration.yml");
+    my $all_channels_configuration = YAML::LoadFile("$project_root/$project_name/$subproject_name/descriptor.yml");
 
     my $all_channels = $all_channels_configuration->{channels};
 

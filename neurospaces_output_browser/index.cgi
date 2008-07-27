@@ -91,7 +91,7 @@ sub document_output_root
 
     eval
     {
-	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
+	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/descriptor.yml");
     };
 
     my $header = $module_configuration->{description} || $module_name;

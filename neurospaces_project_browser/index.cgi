@@ -97,7 +97,7 @@ sub formalize_project
 
 	eval
 	{
-	    $module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
+	    $module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/descriptor.yml");
 	};
 
 	$module_description = $module_configuration->{description} || $module_name;
@@ -138,7 +138,7 @@ sub formalize_project_subprojects
 
     eval
     {
-	$known_subprojects = LoadFile("$project_root/$project_name/configuration.yml");
+	$known_subprojects = LoadFile("$project_root/$project_name/descriptor.yml");
     };
 
     foreach my $subproject_name (grep { $known_subprojects->{$_} } @$all_subprojects)

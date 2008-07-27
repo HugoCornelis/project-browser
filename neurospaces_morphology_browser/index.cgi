@@ -236,7 +236,7 @@ if ($project_name && $morphology_name)
 
     eval
     {
-	$all_operations ||= LoadFile("$project_root/$project_name/morphologies/configuration.yml");
+	$all_operations ||= LoadFile("$project_root/$project_name/morphologies/descriptor.yml");
     };
 
 }
@@ -256,7 +256,7 @@ sub formalize_morphologies
 
     eval
     {
-	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/configuration.yml");
+	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/descriptor.yml");
     };
 
     my $header = $module_configuration->{description} || 'Morphologies';
@@ -365,7 +365,7 @@ sub formalize_morphologies
 
 	eval
 	{
-	    $module_configuration = LoadFile("$project_root/$project_name/morphologies/$morphology_name/configuration.yml");
+	    $module_configuration = LoadFile("$project_root/$project_name/morphologies/$morphology_name/descriptor.yml");
 	};
 
 	$morphology_description = $module_configuration->{description} || $morphology_name;

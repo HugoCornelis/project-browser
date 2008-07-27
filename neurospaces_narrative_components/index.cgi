@@ -91,7 +91,7 @@ sub formalize_components
 
     eval
     {
-	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/configuration.yml");
+	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/descriptor.yml");
     };
 
     my $header = $module_configuration->{description} || 'Narrative Components';
@@ -155,7 +155,7 @@ sub formalize_component
 
     eval
     {
-	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/configuration.yml");
+	$module_configuration = LoadFile("$project_root/$project_name/$subproject_name/descriptor.yml");
     };
 
     my $header = $module_configuration->{description} || 'Narrative Components';
