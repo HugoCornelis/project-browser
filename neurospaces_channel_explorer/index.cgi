@@ -68,9 +68,11 @@ my $project_name = $query->param('project_name');
 
 my $subproject_name = $query->param('subproject_name');
 
-my $module_name = $query->param('module_name');
+my $channel_name = $query->param('channel_name');
 
 my $project_root = $neurospaces_config->{project_browser}->{root_directory};
+
+my $figures_directory = $neurospaces_config->{project_browser}->{root_directory} . "$project_name/$subproject_name/channel-explorer/figures";
 
 
 sub formalize_project
@@ -79,33 +81,30 @@ sub formalize_project
 
     my $subproject_name = shift;
 
+    use YAML;
+
     # get all information from the database
 
-    my $all_modules = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name/$subproject_name"`, ];
+    my $all_channels_configuration = YAML::LoadFile("$project_root/$project_name/$subproject_name/configuration.yml");
 
     my @links;
     my @titles;
     my @icons;
 
-    foreach my $module_name (@$all_modules)
+    my $all_channels = $all_channels_configuration->{channels};
+
+    foreach my $channel_name (keys %$all_channels)
     {
+	my $channel = $all_channels->{$channel_name};
+
 	use YAML 'LoadFile';
 
-	my $module_description;
-
-	my $module_configuration;
-
-	eval
-	{
-	    $module_configuration = LoadFile("$project_root/$project_name/$subproject_name/$module_name/configuration.yml");
-	};
-
-	$module_description = $module_configuration->{description} || $module_name;
+	my $channel_description = $channel->{description};
 
 	#    if ($access{$subschedule})
 	{
-	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}&module_name=${module_name}");
-	    push(@titles, $module_description);
+	    push(@links, "?project_name=${project_name}&subproject_name=${subproject_name}&channel_name=${channel_name}");
+	    push(@titles, $channel_description);
 
 	    my $icon = 'images/icon.gif';
 
@@ -120,79 +119,255 @@ sub formalize_project
 }
 
 
-sub formalize_project_subprojects
+sub formalize_project_channel
 {
     my $project_name = shift;
 
+    my $subproject_name = shift;
+
+    my $channel_name = shift;
+
+    use YAML;
+
     # get all information from the database
 
-    my $all_subprojects = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root/$project_name"`, ];
+    my $all_channels_configuration = YAML::LoadFile("$project_root/$project_name/$subproject_name/configuration.yml");
 
-    my @links;
-    my @titles;
-    my @icons;
+    my $all_channels = $all_channels_configuration->{channels};
 
-    my $known_subprojects;
+    # obtain information about the requested channel
 
-    use YAML 'LoadFile';
+    my $channel = $all_channels->{$channel_name};
 
-    eval
+    my $channel_model_specification = $channel->{model};
+
+    $channel_model_specification =~ /(.*)::(.*)/;
+
+    my $channel_modelfile = $1;
+
+    my $modelname = $2;
+
+    # define a schedule to extract the tables
+
+    $ENV{NEUROSPACES_NMC_SYSTEM_MODELS} = "/usr/local/neurospaces/models/library";
+
+    use SSP;
+
+    my $args = [ "$0", "-P", $channel_modelfile ];
+
+    my $scheduler
+	= SSP->new(
+		   {
+		    apply => {
+			      simulation => [
+					     {
+					      arguments => [
+							    {
+# 							     format => 'alpha-beta',
+							     format => 'steadystate-tau',
+# 							     format => 'A-B',
+# 							     format => 'internal',
+							     output => 'file:///tmp/a',
+							     source => "$modelname/segments/soma/naf/naf_gate_activation/A",
+							    },
+							   ],
+					      method => 'dump',
+					      object => 'tabulator',
+					     },
+					     {
+					      arguments => [
+							    {
+# 							     format => 'alpha-beta',
+							     format => 'steadystate-tau',
+# 							     format => 'A-B',
+# 							     format => 'internal',
+							     output => 'file:///tmp/b',
+							     source => "$modelname/segments/soma/naf/naf_gate_activation/B",
+							    },
+							   ],
+					      method => 'dump',
+					      object => 'tabulator',
+					     },
+					    ],
+			     },
+		    analyzers => {
+				  tabulator => {
+						module_name => 'Heccer',
+						package => 'Heccer::Tabulator',
+						initializers => [
+								 {
+								  arguments => [ { source => "neurospaces::$modelname", }, ],
+								  method => 'serve',
+								 },
+								],
+					       },
+				 },
+		    models => [
+			       {
+				modelname => $modelname,
+				solverclass => "heccer",
+			       },
+			      ],
+		    name => "tabulator for $modelname",
+		    services => {
+				 neurospaces => {
+						 initializers => [
+								  {
+								   arguments => [ $args, ],
+								   method => 'read',
+								  },
+								 ],
+# 						 model_library => '/usr/local/neurospaces/models/library',
+						 module_name => 'Neurospaces',
+						},
+				},
+		    solverclasses => {
+				      heccer => {
+# 						 constructor_settings => {
+# 									  configuration => {
+# 											    reporting => {
+# 													  granularity => 10000,
+# 													  tested_things => (
+# 															    $SwiggableHeccer::HECCER_DUMP_VM_COMPARTMENT_MATRIX
+# 															    | $SwiggableHeccer::HECCER_DUMP_VM_COMPARTMENT_DATA
+# 															    | $SwiggableHeccer::HECCER_DUMP_VM_COMPARTMENT_OPERATIONS
+# 															    | $SwiggableHeccer::HECCER_DUMP_VM_MECHANISM_DATA
+# 															    | $SwiggableHeccer::HECCER_DUMP_VM_MECHANISM_OPERATIONS
+# 															    | $SwiggableHeccer::HECCER_DUMP_VM_SUMMARY
+# 															   ),
+# 													 },
+# 											   },
+# 									  dStep => 5e-7,
+# 									  options => {
+# 										      iIntervalEntries => 10,
+# 										     },
+# 									 },
+						 module_name => 'Heccer',
+						 service_name => 'neurospaces',
+						},
+				     },
+		   },
+		  );
+
+    # get the tables
+
+    my $channel_tables = $scheduler->run();
+
+    # visualize the tables
+
+    my $tables_a = YAML::LoadFile("/tmp/a");
+    my $tables_b = YAML::LoadFile("/tmp/b");
+
+    my $steady_state = $tables_a->{steady};
+
+    my $tau = $tables_a->{tau};
+
     {
-	$known_subprojects = LoadFile("$project_root/$project_name/configuration.yml");
-    };
+# 	use GD;
 
-    foreach my $subproject_name (grep { $known_subprojects->{$_} } @$all_subprojects)
-    {
-	#    if ($access{$subschedule})
+# 	my $graph = GD::Image->new(400, 300);
+
+# 	my $white = $graph->colorAllocate(255,255,255);
+
+# 	$graph->transparent($white);
+
+# 	print $graph->png();
+
+	use File::Temp qw/ :mktemp /;
+
+	use Math::Trig qw [pi];
+
+	use PDL;
+	use PDL::Graphics::PLplot;
+
+	# get a temporary file
+
+	#t note that this is an unsafe implementation
+
+	my $filename_pbm = mktemp("../tmp/neurospaces_output_pbm_XXXXXXXXXXXX");
+
+	#! needed for mime types below, here needed for consistency
+
+	$filename_pbm .= ".pbm";
+
+	my $units
+	    = {
+	       'Ca' => 'mol',
+	       'Gk' => 'Siemens',
+	       'Ik' => 'Current',
+	       'Vm' => 'Vm',
+	       'state_x' => 'prob.',
+	       'state_y' => 'prob.',
+	      };
+
+	my $unit = $units->{''} || 'state';
+
+	my $pl
+	    = PDL::Graphics::PLplot->new
+		(
+		 DEV => "pbm",
+		 FILE => $filename_pbm,
+		 PAGESIZE => [ 1000, 900, ],
+		 XLAB => 'Vm',
+		 YLAB => $unit,
+		);
+
+# 	#! + 1 for time step
+
+# 	my $output_filename = $figures_directory . "/generated__" . $channel_name;
+
+# 	@$columns = PDL->rcols($output_filename, 0, $column);
+
+	# add the extracted columns to the plot
+
+	my $range
+	    = [
+	       map
+	       {
+		   $tables_a->{hi}->{start} + $_ * $tables_a->{hi}->{step};
+	       }
+	       1 .. $tables_a->{entries},
+	      ];
+
+	$pl->xyplot($range, $tau);
+
+	$pl->close();
+
+	my $filename_png = mktemp("../tmp/neurospaces_output_png_XXXXXXXXXXXX");
+
+	$filename_png .= ".png";
+
+	system "convert \"$filename_pbm\" \"$filename_png\"";
+
+	if ($?)
 	{
-	    my $link_target
-		= $known_subprojects->{$subproject_name}->{link_target} ?
-		    $known_subprojects->{$subproject_name}->{link_target} . "?project_name=${project_name}&subproject_name=${subproject_name}"
-			: "$project_root/$project_name/$subproject_name";
-
-	    push(@links, $link_target);
-	    push(@titles, $known_subprojects->{$subproject_name}->{description} || $subproject_name);
-
-	    my $icon = 'images/icon.gif';
-
-	    push(@icons, $icon, );
+	    print STDERR "system operator error: $?\n";
 	}
+
+	&header("Channel Kinetics Plotter: $channel_name", "", undef, 1, 1, '', '', '');
+
+	print "<hr>\n";
+
+# 	my $documents = document_ssp_schedule($sesa_specification, $schedule_name, $output_name, );
+
+# 	my $data = documents_parse_input($documents);
+
+# 	documents_merge_data($documents, $data);
+
+# 	formalize_sesa_outputs_for_module($documents);
+
+	print "<center>\n";
+
+	print "<img src=\"$filename_png\" alt=\"a plplot image\" border=0>\n";
+
+	print "</center>\n";
+
+	print "<hr>\n";
+
+	# finalize (web|user)min specific stuff.
+
+	&footer("index.cgi?project_name=${project_name}&subproject_name=${subproject_name}", "Project $project_name, $subproject_name");
     }
-
-    &icons_table(\@links, \@titles, \@icons);
-
-    print "<hr>" ;
-
-}
-
-
-sub formalize_project_root
-{
-    # get all information from the database
-
-    my $all_projects = [ sort map { chomp; $_; } `/bin/ls -1 "$project_root"`, ];
-
-    my @links;
-    my @titles;
-    my @icons;
-
-    foreach my $project_name (@$all_projects)
-    {
-	#    if ($access{$subschedule})
-	{
-	    push(@links, "?project_name=${project_name}");
-	    push(@titles, $project_name);
-
-	    my $icon = 'images/icon.gif';
-
-	    push(@icons, $icon, );
-	}
-    }
-
-    &icons_table(\@links, \@titles, \@icons);
-
-    print "<hr>" ;
-
 }
 
 
@@ -244,7 +419,7 @@ sub main
 
 	&footer("index.cgi", 'All Projects');
     }
-    elsif (!$module_name)
+    elsif (!$channel_name)
     {
 	&header("Project Browser: $project_name", "", undef, 1, 1, 0, '');
 
@@ -258,29 +433,15 @@ sub main
     }
     else
     {
-	my $url = "/neurospaces_output_browser/?";
+	&header("Project Browser: $project_name", "", undef, 1, 1, 0, '');
 
-	my $args = [];
+	print "<hr>\n";
 
-	foreach my $argument_name (
-				   qw(
-				      project_name
-				      subproject_name
-				      module_name
-				     )
-				  )
-	{
-	    my $value = eval "\$$argument_name";
+	formalize_project_channel($project_name, $subproject_name, $channel_name);
 
-	    if ($value)
-	    {
-		push @$args, "$argument_name=$value";
-	    }
-	}
+	# finalize (web|user)min specific stuff.
 
-	$url .= join '&', @$args;
-
-	&redirect($url, 'Output Browser');
+	&footer("index.cgi?project_name=${project_name}&subproject_name=${subproject_name}", "Project $project_name, $subproject_name");
     }
 }
 
