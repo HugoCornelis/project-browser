@@ -40,10 +40,10 @@ use Sesa::Sems qw(
 		 );
 
 use Sesa::Access (
-		  neurospaces_project_browser => {
-						  level => (our $editable = 1 && \$editable),
-						  label => 'projects, subprojects and project modules',
-						 },
+		  neurospaces_channel_explorer => {
+						   level => (our $editable = 1 && \$editable),
+						   label => 'projects, subprojects and project modules',
+						  },
 		 );
 # use Sesa::Persistency::Specification qw(
 # 					specification_get_icon
