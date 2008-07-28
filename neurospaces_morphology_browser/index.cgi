@@ -94,19 +94,6 @@ if ($project_name && $morphology_name)
 {
     #t the channel names should be coming from a library of from a project local configuration file.
 
-    my $channel_names
-	= {
-	   cap => 'P type Calcium',
-	   cat => 'T type Calcium',
-	   h => 'Anomalous Rectifier',
-	   k2 => 'Small Ca Dependent Potassium',
-	   kC => 'Large Ca Dependent Potassium',
-	   kdr => 'Delayed Rectifier',
-	   km => 'Muscarinic Potassium',
-	   naf => 'Fast Sodium',
-	   nap => 'Persistent Sodium',
-	  };
-
     my $aggregator_operations
 	= {
 	   (
@@ -132,6 +119,19 @@ if ($project_name && $morphology_name)
 	       VOLUME__cumulate
 	      ),
 	   ),
+	  };
+
+    my $channel_names
+	= {
+	   cap => 'P type Calcium',
+	   cat => 'T type Calcium',
+	   h => 'Anomalous Rectifier',
+	   k2 => 'Small Ca Dependent Potassium',
+	   kC => 'Large Ca Dependent Potassium',
+	   kdr => 'Delayed Rectifier',
+	   km => 'Muscarinic Potassium',
+	   naf => 'Fast Sodium',
+	   nap => 'Persistent Sodium',
 	  };
 
     my $channel_operations
