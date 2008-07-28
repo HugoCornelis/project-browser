@@ -157,14 +157,10 @@ if ($project_name && $morphology_name)
 				     description => "Morphology Visualizer",
 				    },
 	   morphology_explorer_activated => {
-					     #! argument to --show is serial for display
-
 					     command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --gui 2>&1",
 					     description => "Morphology Explorer, Activated Morphology",
 					    },
 	   morphology_explorer_passive => {
-					   #! argument to --show is serial for display
-
 					   command => "export DISPLAY=:0.0 && cd '$project_root/$project_name/' && neurospaces '$project_root/$project_name/morphologies/$morphology_name' --no-use-library --gui 2>&1",
 					   description => "Morphology Explorer, Passive Morphology",
 					  },
