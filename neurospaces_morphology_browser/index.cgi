@@ -10,6 +10,15 @@ use strict;
 
 use CGI;
 
+use Carp;
+
+$SIG{__DIE__}
+    = sub {
+
+	confess(@_);
+
+    };
+
 use Data::Dumper;
 
 
@@ -70,6 +79,8 @@ my $project_name = $query->param('project_name');
 
 my $subproject_name = 'morphologies';
 
+my $module_name = $query->param('module_name');
+
 my $morphology_name = $query->param('morphology_name');
 
 my $morphology_name_short = $morphology_name;
@@ -92,8 +103,6 @@ my $all_operations;
 
 if ($project_name && $morphology_name)
 {
-    #t the channel names should be coming from a library of from a project local configuration file.
-
     my $aggregator_operations
 	= {
 	   (
@@ -120,6 +129,8 @@ if ($project_name && $morphology_name)
 	      ),
 	   ),
 	  };
+
+    #t the channel names should be coming from a library of from a project local configuration file.
 
     my $channel_names
 	= {
@@ -238,7 +249,7 @@ if ($project_name && $morphology_name)
 }
 
 
-sub formalize_morphologies
+sub document_morphologies
 {
     my $project_name = shift;
 
@@ -296,7 +307,7 @@ sub formalize_morphologies
 	system "$command &";
     }
 
-    # get all commands specific to this module
+    # get all commands specific to this module and project
 
     {
 	print "<center><h4>Specific Commands</h4></center>\n";
@@ -349,6 +360,8 @@ sub formalize_morphologies
     my @titles;
     my @icons;
 
+    my $rows;
+
     foreach my $morphology_name (@$all_morphologies)
     {
 	$morphology_name =~ s(^$project_root/$project_name/morphologies)();
@@ -381,12 +394,202 @@ sub formalize_morphologies
 	}
 
 	push(@icons, $icon, );
+
+	$rows->{$morphology_name}
+	    = {
+	       group => 'None',
+	       icon => $icon,
+	       link => "?project_name=${project_name}&morphology_name=${morphology_name}",
+	       title => $morphology_description,
+	      };
     }
 
-    &icons_table(\@links, \@titles, \@icons);
+#     #t better to put them in HTML table with checkboxes that allow to
+#     #t group the morphologies for aggregator_operations.
 
-    print "<hr>" ;
+#     &icons_table(\@links, \@titles, \@icons);
 
+    my $format_morphologies
+	= {
+	   columns =>
+	   [
+	    {
+	     header => 'Morphology',
+	     key_name => 'dummy1',
+	     type => 'constant',
+	     be_defined => 1,
+	    },
+	    {
+	     header => 'Morphology Group',
+	     key_name => 'group',
+	     type => 'code',
+	     be_defined => 1,
+	     generate =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $row_key = shift;
+
+		 my $row = shift;
+
+		 my $filter_data = shift;
+
+		 if ($editable)
+		 {
+		     my $str = '';
+
+		     print STDERR Dumper(\@_);
+
+		     my $default = $row->{group};
+
+		     my $value = [ 'None', 0 .. 10 ];
+
+		     my $name = "field_$self->{name}_configuration_${row_key}_1";
+
+		     $str
+			 .= $query->popup_menu
+			     (
+			      -name => $name,
+			      -default => $default,
+			      -values => $value,
+			      -override => 1,
+			     );
+
+		     return($str);
+		 }
+		 else
+		 {
+		     return "Undefined";
+		 }
+	     },
+	    },
+	   ],
+	   hashkey => 'Morphology',
+	  };
+
+    my $session_id_digest = $query->param('session_id');
+
+    if (!defined $session_id_digest)
+    {
+	my $session_id = rand(10000);
+
+	use Digest::SHA1 'sha1_base64';
+
+	$session_id_digest = sha1_base64($session_id);
+    }
+
+    my $workflow_morphologies
+	= Sesa::Workflow->new
+	    (
+	     {
+	      sequence => [
+			   {
+			    label => "Neurospaces",
+			    target => '/?cat=neurospaces',
+			   },
+			   {
+			    label => "Outputs",
+			    target => '/neurospaces_output_browser/',
+			   },
+			  ],
+	      related => [
+			  {
+			   label => "Simulation Generator",
+			   target => '/neurospaces_simulation_generator/',
+			  },
+			  {
+			   label => "Simulation Browser",
+			   target => '/neurospaces_simulation_browser/',
+			  },
+			 ],
+	     },
+	     {
+	      self => $ENV{REQUEST_URI},
+	     },
+	    );
+
+    my $document_morphologies
+	= Sesa::TableDocument->new
+	    (
+	     CGI => $query,
+	     center => 1,
+	     column_headers => 1,
+	     contents => $rows,
+	     format => $format_morphologies,
+	     has_submit => $editable,
+	     has_reset => $editable,
+	     header => 'Morphology Names
+<h4> group morphologies, then submit. </h4>',
+	     hidden => {
+			session_id => $session_id_digest,
+			$project_name ? ( project_name => $project_name, ) : (),
+			$subproject_name ? ( subproject_name => $subproject_name, ) : (),
+			$module_name ? ( module_name => $module_name, ) : (),
+		       },
+	     name => 'morphologies',
+	     output_mode => 'html',
+	     regex_encapsulators => [
+				     {
+				      match_content => 1,
+				      name => 'channel-inhibited-editfield-encapsulator',
+				      regex => ".*NEW_.*",
+				      type => 'constant',
+				     },
+				    ],
+# 	     row_filter => sub { !ref $_[1]->{value}, },
+	     separator => '/',
+	     sort => sub { return $_[0] <=> $_[1] },
+# 	     submit_actions => {
+# 				'output-selector' =>
+# 				sub
+# 				{
+# 				    my ($document, $request, $contents, ) = @_;
+
+# 				    # merge the new data into the old data
+
+# 				    map
+# 				    {
+# 					$column_specification->{$_}->{outputs}
+# 					    = $contents->{$_}->{value};
+# 				    }
+# 					keys %$column_specification;
+
+# 				    # write the new content
+
+# 				    specification_write($module_name, $scheduler, [ $submitted_request ] );
+
+# 				    return $contents;
+# 				},
+# 			       },
+	     workflow => {
+			  actor => $workflow_morphologies,
+			  configuration => {
+					    header => {
+						       after => 1,
+						       before => 1,
+# 						       history => 1,
+						       related => 1,
+						      },
+					    trailer => {
+							after => 1,
+						       },
+					   },
+			 },
+	    );
+
+    return [ $document_morphologies, ];
+
+#     print "<hr>" ;
+
+}
+
+
+sub formalize_morphologies
+{
+    my $documents = shift;
+
+    documents_formalize($documents, { rulers => 1, }, );
 }
 
 
@@ -497,7 +700,13 @@ sub main
 
 	print "<hr>\n";
 
-	formalize_morphologies($project_name);
+	my $documents = document_morphologies($project_name);
+
+	my $data = documents_parse_input($documents);
+
+	documents_merge_data($documents, $data);
+
+	formalize_morphologies($documents);
 
 	# finalize (web|user)min specific stuff.
 
