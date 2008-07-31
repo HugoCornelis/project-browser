@@ -310,7 +310,7 @@ sub document_morphologies
     # get all commands specific to this module and project
 
     {
-	print "<center><h4>Specific Commands</h4></center>\n";
+	print "<center><h4>Commands Specific to this Project Module</h4></center>\n";
 
 	my @links;
 	my @titles;
@@ -341,9 +341,177 @@ sub document_morphologies
 
     # get all information from the database
 
-    use Neurospaces::Project::Modules::Morphology 'all_morphologies';
+    use Neurospaces::Project::Modules::Morphology 'all_morphology_groups';
 
-#     my $all_morphologies = [ sort map { chomp; $_; } `find "$project_root/$project_name/morphologies" -name "*.ndf" -o -name "*.p" -o -iname "*.swc"`, ];
+    my $all_morphology_groups
+	= all_morphology_groups
+	    (
+	     {
+	      name => $project_name,
+	      root => $project_root,
+	     },
+	    );
+
+    my $all_groups = $all_morphology_groups->{groups};
+
+#     print "<center><h4>All Available Morphology Groups</h4></center>\n";
+
+    my $rows;
+
+    foreach my $morphology_group_name (keys %$all_groups)
+    {
+	my $morphology_group = $all_groups->{$morphology_group_name};
+
+	$rows->{$morphology_group_name}
+	    = {
+	       description => $morphology_group->{description},
+	       number => $morphology_group->{number},
+# 	       link => "?project_name=${project_name}&morphology_name=${morphology_name}",
+# 	       title => $morphology_description,
+	      };
+    }
+
+    my $format_morphology_groups
+	= {
+	   columns =>
+	   [
+	    {
+	     header => 'Morphology Group',
+	     key_name => 'dummy1',
+	     type => 'constant',
+	     be_defined => 1,
+	    },
+	    {
+	     header => 'Description',
+	     key_name => 'description',
+	     type => 'constant',
+	     be_defined => 1,
+	    },
+	    {
+	     header => 'Operation 1',
+	     key_name => 'operation 1',
+	     type => 'code',
+	     be_defined => 1,
+	     generate =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $row_key = shift;
+
+		 my $row = shift;
+
+		 my $filter_data = shift;
+
+		 my $str = '';
+
+		 $str
+		     .= $query->a
+			 (
+			  {
+			   -href => $row->{link},
+			  },
+			  "Analyze",
+			 );
+
+		 return($str);
+	     },
+	    },
+	   ],
+	   hashkey => 'Morphology Group',
+	  };
+
+    my $session_id_digest = $query->param('session_id');
+
+    if (!defined $session_id_digest)
+    {
+	my $session_id = rand(10000);
+
+	use Digest::SHA1 'sha1_base64';
+
+	$session_id_digest = sha1_base64($session_id);
+    }
+
+    my $workflow_morphology_groups
+	= Sesa::Workflow->new
+	    (
+	     {
+	      sequence => [
+			   {
+			    label => "Neurospaces",
+			    target => '/?cat=neurospaces',
+			   },
+			   {
+			    label => "Outputs",
+			    target => '/neurospaces_output_browser/',
+			   },
+			  ],
+	      related => [
+			  {
+			   label => "Simulation Generator",
+			   target => '/neurospaces_simulation_generator/',
+			  },
+			  {
+			   label => "Simulation Browser",
+			   target => '/neurospaces_simulation_browser/',
+			  },
+			 ],
+	     },
+	     {
+	      self => $ENV{REQUEST_URI},
+	     },
+	    );
+
+    my $document_morphology_groups
+	= Sesa::TableDocument->new
+	    (
+	     CGI => $query,
+	     center => 1,
+	     column_headers => 1,
+	     contents => $rows,
+	     format => $format_morphology_groups,
+# 	     has_submit => $editable,
+# 	     has_reset => $editable,
+	     header => 'Morphology Groups
+<h4> Analyze morphology group characteristics. </h4>',
+	     hidden => {
+			session_id => $session_id_digest,
+			$project_name ? ( project_name => $project_name, ) : (),
+			$subproject_name ? ( subproject_name => $subproject_name, ) : (),
+			$module_name ? ( module_name => $module_name, ) : (),
+		       },
+	     name => 'morphologies-groups',
+	     output_mode => 'html',
+	     regex_encapsulators => [
+				     {
+				      match_content => 1,
+				      name => 'channel-inhibited-editfield-encapsulator',
+				      regex => ".*NEW_.*",
+				      type => 'constant',
+				     },
+				    ],
+# 	     row_filter => sub { !ref $_[1]->{value}, },
+	     separator => '/',
+	     sort => sub { return $_[0] cmp $_[1] },
+	     workflow => {
+			  actor => $workflow_morphology_groups,
+			  configuration => {
+					    header => {
+						       after => 1,
+						       before => 1,
+# 						       history => 1,
+						       related => 1,
+						      },
+					    trailer => {
+							after => 1,
+						       },
+					   },
+			 },
+	    );
+
+    # get all information from the database
+
+    use Neurospaces::Project::Modules::Morphology 'all_morphologies';
 
     my $all_morphologies
 	= all_morphologies
@@ -354,11 +522,7 @@ sub document_morphologies
 	     },
 	    );
 
-    print "<center><h4>All Available Morphologies</h4></center>\n";
-
-    my @links;
-    my @titles;
-    my @icons;
+#     print "<center><h4>All Available Morphologies</h4></center>\n";
 
     my $rows;
 
@@ -379,35 +543,13 @@ sub document_morphologies
 
 	$morphology_description = $module_configuration->{description} || $morphology_name;
 
-	push(@links, "?project_name=${project_name}&morphology_name=${morphology_name}");
-	push(@titles, $morphology_description);
-
-	my $icon = 'images/icon.gif';
-
-	if ($morphology_name =~ /.p$/)
-	{
-	    $icon = 'images/genesis.gif';
-	}
-	elsif ($morphology_name =~ /.ndf$/)
-	{
-	    $icon = 'images/ndf.gif';
-	}
-
-	push(@icons, $icon, );
-
 	$rows->{$morphology_name}
 	    = {
 	       group => 'None',
-	       icon => $icon,
 	       link => "?project_name=${project_name}&morphology_name=${morphology_name}",
 	       title => $morphology_description,
 	      };
     }
-
-#     #t better to put them in HTML table with checkboxes that allow to
-#     #t group the morphologies for aggregator_operations.
-
-#     &icons_table(\@links, \@titles, \@icons);
 
     my $format_morphologies
 	= {
@@ -464,20 +606,39 @@ sub document_morphologies
 		 }
 	     },
 	    },
+	    {
+	     header => 'Analyze',
+	     key_name => 'link',
+	     type => 'code',
+	     be_defined => 1,
+	     generate =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $row_key = shift;
+
+		 my $row = shift;
+
+		 my $filter_data = shift;
+
+		 my $str = '';
+
+		 $str
+		     .= $query->a
+			 (
+			  {
+			   -href => $row->{link},
+			  },
+			  "Analyze",
+			 );
+
+		 return($str);
+	     },
+	    },
 	   ],
 	   hashkey => 'Morphology',
 	  };
-
-    my $session_id_digest = $query->param('session_id');
-
-    if (!defined $session_id_digest)
-    {
-	my $session_id = rand(10000);
-
-	use Digest::SHA1 'sha1_base64';
-
-	$session_id_digest = sha1_base64($session_id);
-    }
 
     my $workflow_morphologies
 	= Sesa::Workflow->new
@@ -520,7 +681,7 @@ sub document_morphologies
 	     has_submit => $editable,
 	     has_reset => $editable,
 	     header => 'Morphology Names
-<h4> group morphologies, then submit. </h4>',
+<h4> Define morphology groups, then submit for further analysis. </h4>',
 	     hidden => {
 			session_id => $session_id_digest,
 			$project_name ? ( project_name => $project_name, ) : (),
@@ -539,7 +700,7 @@ sub document_morphologies
 				    ],
 # 	     row_filter => sub { !ref $_[1]->{value}, },
 	     separator => '/',
-	     sort => sub { return $_[0] <=> $_[1] },
+	     sort => sub { return $_[0] cmp $_[1] },
 # 	     submit_actions => {
 # 				'output-selector' =>
 # 				sub
@@ -578,7 +739,7 @@ sub document_morphologies
 			 },
 	    );
 
-    return [ $document_morphologies, ];
+    return [ $document_morphology_groups, $document_morphologies, ];
 
 #     print "<hr>" ;
 
