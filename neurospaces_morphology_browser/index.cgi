@@ -354,43 +354,35 @@ sub document_morphologies
 
     my $all_groups = $all_morphology_groups->{groups};
 
-#     print "<center><h4>All Available Morphology Groups</h4></center>\n";
-
-    my $rows;
-
-    foreach my $morphology_group_name (keys %$all_groups)
-    {
-	my $morphology_group = $all_groups->{$morphology_group_name};
-
-	$rows->{$morphology_group_name}
-	    = {
-	       description => $morphology_group->{description},
-	       number => $morphology_group->{number},
-# 	       link => "?project_name=${project_name}&morphology_name=${morphology_name}",
-# 	       title => $morphology_description,
-	      };
-    }
-
     my $format_morphology_groups
 	= {
 	   columns =>
 	   [
 	    {
+	     be_defined => 1,
 	     header => 'Morphology Group',
 	     key_name => 'dummy1',
 	     type => 'constant',
-	     be_defined => 1,
 	    },
 	    {
+	     be_defined => 1,
+	     encapsulator => {
+			      options => {
+					  -maxlength => 30,
+					  -size => 35,
+					 },
+			     },
 	     header => 'Description',
 	     key_name => 'description',
-	     type => 'constant',
-	     be_defined => 1,
+	     type => 'textfield',
 	    },
 	    {
-	     header => 'Operation 1',
-	     key_name => 'operation 1',
-	     type => 'code',
+	     be_defined => 1,
+	     header => 'Group Number',
+	     key_name => 'number',
+	     type => 'constant',
+	    },
+	    {
 	     be_defined => 1,
 	     generate =>
 	     sub
@@ -416,6 +408,9 @@ sub document_morphologies
 
 		 return($str);
 	     },
+	     header => 'Operation 1',
+	     key_name => 'operation 1',
+	     type => 'code',
 	    },
 	   ],
 	   hashkey => 'Morphology Group',
@@ -468,11 +463,11 @@ sub document_morphologies
 	     CGI => $query,
 	     center => 1,
 	     column_headers => 1,
-	     contents => $rows,
+	     contents => $all_morphology_groups->{groups},
 	     format => $format_morphology_groups,
-# 	     has_submit => $editable,
-# 	     has_reset => $editable,
-	     header => 'Morphology Groups
+	     has_submit => $editable,
+	     has_reset => $editable,
+	     header => '<h2> Morphology Groups </h2>
 <h4> Analyze morphology group characteristics. </h4>',
 	     hidden => {
 			session_id => $session_id_digest,
@@ -492,7 +487,7 @@ sub document_morphologies
 				    ],
 # 	     row_filter => sub { !ref $_[1]->{value}, },
 	     separator => '/',
-	     sort => sub { return $_[0] cmp $_[1] },
+	     sort => sub { return $_[2]->{number} <=> $_[3]->{number} },
 	     workflow => {
 			  actor => $workflow_morphology_groups,
 			  configuration => {
@@ -545,7 +540,15 @@ sub document_morphologies
 
 	$rows->{$morphology_name}
 	    = {
-	       group => 'None',
+	       (
+		map
+		{
+		    (
+		     "group$_" => 'Yes'
+		    );
+		}
+		1 .. 10,
+	       ),
 	       link => "?project_name=${project_name}&morphology_name=${morphology_name}",
 	       title => $morphology_description,
 	      };
@@ -560,51 +563,6 @@ sub document_morphologies
 	     key_name => 'dummy1',
 	     type => 'constant',
 	     be_defined => 1,
-	    },
-	    {
-	     header => 'Morphology Group',
-	     key_name => 'group',
-	     type => 'code',
-	     be_defined => 1,
-	     generate =>
-	     sub
-	     {
-		 my $self = shift;
-
-		 my $row_key = shift;
-
-		 my $row = shift;
-
-		 my $filter_data = shift;
-
-		 if ($editable)
-		 {
-		     my $str = '';
-
-		     print STDERR Dumper(\@_);
-
-		     my $default = $row->{group};
-
-		     my $value = [ 'None', 0 .. 10 ];
-
-		     my $name = "field_$self->{name}_configuration_${row_key}_1";
-
-		     $str
-			 .= $query->popup_menu
-			     (
-			      -name => $name,
-			      -default => $default,
-			      -values => $value,
-			      -override => 1,
-			     );
-
-		     return($str);
-		 }
-		 else
-		 {
-		     return "Undefined";
-		 }
-	     },
 	    },
 	    {
 	     header => 'Analyze',
@@ -636,6 +594,57 @@ sub document_morphologies
 		 return($str);
 	     },
 	    },
+	    map
+	    {
+		(
+		 {
+		  header => 'Grp ' . $_,
+		  key_name => 'group' . $_,
+		  type => 'checkbox',
+		  be_defined => 1,
+		  generate =>
+		  sub
+		  {
+		      my $self = shift;
+
+		      my $row_key = shift;
+
+		      my $row = shift;
+
+		      my $filter_data = shift;
+
+		      if ($editable)
+		      {
+			  my $str = '';
+
+			  print STDERR Dumper(\@_);
+
+			  my $default = $row->{group};
+
+			  my $value = [ 'None', 0 .. 10 ];
+
+			  my $name = "field_$self->{name}_configuration_${row_key}_1";
+
+			  $str
+			      .= $query->popup_menu
+				  (
+				   -name => $name,
+				   -default => $default,
+				   -values => $value,
+				   -override => 1,
+				  );
+
+			  return($str);
+		      }
+		      else
+		      {
+			  return "Undefined";
+		      }
+		  },
+		 }
+		);
+	    }
+	    1 .. 10,
 	   ],
 	   hashkey => 'Morphology',
 	  };
@@ -680,7 +689,7 @@ sub document_morphologies
 	     format => $format_morphologies,
 	     has_submit => $editable,
 	     has_reset => $editable,
-	     header => 'Morphology Names
+	     header => '<h2> Morphology Names </h2>
 <h4> Define morphology groups, then submit for further analysis. </h4>',
 	     hidden => {
 			session_id => $session_id_digest,
