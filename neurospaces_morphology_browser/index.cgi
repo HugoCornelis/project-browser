@@ -550,7 +550,7 @@ sub document_morphologies
 		1 .. 10,
 	       ),
 	       link => "?project_name=${project_name}&morphology_name=${morphology_name}",
-	       title => $morphology_description,
+# 	       title => $morphology_description,
 	      };
     }
 
@@ -710,11 +710,17 @@ sub document_morphologies
 # 	     row_filter => sub { !ref $_[1]->{value}, },
 	     separator => '/',
 	     sort => sub { return $_[0] cmp $_[1] },
-# 	     submit_actions => {
-# 				'output-selector' =>
-# 				sub
-# 				{
-# 				    my ($document, $request, $contents, ) = @_;
+	     submit_actions => {
+				'morphologies' =>
+				sub
+				{
+				    my ($document, $request, $contents, ) = @_;
+
+				    #t loop over all groups
+				    #t   define group name and number
+				    #t   insert morphologies into group that have yes for this group number
+
+				    #t merge new data into group definitions file
 
 # 				    # merge the new data into the old data
 
@@ -729,9 +735,9 @@ sub document_morphologies
 
 # 				    specification_write($module_name, $scheduler, [ $submitted_request ] );
 
-# 				    return $contents;
-# 				},
-# 			       },
+				    return $contents;
+				},
+			       },
 	     workflow => {
 			  actor => $workflow_morphologies,
 			  configuration => {
