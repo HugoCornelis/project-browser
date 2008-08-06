@@ -51,7 +51,7 @@ use Sesa::Sems qw(
 use Sesa::Access (
 		  neurospaces_morphology_browser => {
 						     level => (our $editable = 1 && \$editable),
-						     label => 'projects, subprojects and project modules',
+						     label => 'morphology analysis',
 						    },
 		 );
 # use Sesa::Persistency::Specification qw(
