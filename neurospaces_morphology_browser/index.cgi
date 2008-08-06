@@ -341,10 +341,10 @@ sub document_morphologies
 
     # get all information from the database
 
-    use Neurospaces::Project::Modules::Morphology 'all_morphology_groups';
+    use Neurospaces::Project::Modules::Morphology 'morphology_groups_read';
 
     my $all_morphology_groups
-	= all_morphology_groups
+	= morphology_groups_read
 	    (
 	     {
 	      name => $project_name,
@@ -506,10 +506,10 @@ sub document_morphologies
 
     # get all information from the database
 
-    use Neurospaces::Project::Modules::Morphology 'all_morphologies';
+    use Neurospaces::Project::Modules::Morphology 'morphologies_read';
 
     my $all_morphologies
-	= all_morphologies
+	= morphologies_read
 	    (
 	     {
 	      name => $project_name,
@@ -715,6 +715,61 @@ sub document_morphologies
 				sub
 				{
 				    my ($document, $request, $contents, ) = @_;
+
+				    use YAML 'LoadFile';
+
+				    # loop over all groups
+
+				    use Neurospaces::Project::Modules::Morphology 'morphology_groups_read';
+
+				    my $all_morphology_groups
+					= morphology_groups_read
+					    (
+					     {
+					      name => $project_name,
+					      root => $project_root,
+					     },
+					    );
+
+				    my $all_groups = $all_morphology_groups->{groups};
+
+				    foreach my $group_name (keys %$all_groups)
+				    {
+					my $group = $all_groups->{$group_name};
+
+					# loop over all morphologies
+
+					use Neurospaces::Project::Modules::Morphology 'morphologies_read';
+
+					my $all_morphologies
+					    = morphologies_read
+						(
+						 {
+						  name => $project_name,
+						  root => $project_root,
+						 },
+						);
+
+					foreach my $morphology_name (@$all_morphologies)
+					{
+					    #t some hacking required because morphologies have not a proper id yet.
+
+					    $morphology_name =~ s/^.*morphologies//;
+
+					    # if the morphology belongs to the group in the new configuration
+
+					    if ($contents->{$morphology_name}->{"group" . $group->{number}} eq 'Yes')
+					    {
+						# set in the group descriptor
+
+						$group->{morphologies}->{$morphology_name} = 1;
+					    }
+					    else
+					    {
+						$group->{morphologies}->{$morphology_name} = 0;
+					    }
+					}
+				    }
 
 				    #t loop over all groups
 				    #t   define group name and number
