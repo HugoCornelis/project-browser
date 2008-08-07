@@ -389,6 +389,38 @@ sub document_morphologies
 	     {
 		 my $self = shift;
 
+		 my $group_name = shift;
+
+		 my $group = shift;
+
+		 my $cell_value = shift;
+
+		 if ($editable)
+		 {
+		     return
+			 $query->submit
+			     (
+			      -name  => "delete_beacon-level_$self->{name}_$group->{number}",
+			      -value => ' Delete ',
+			      (!$cell_value ? (-disabled => 1) : ()),
+			     );
+		 }
+		 else
+		 {
+		     return "&nbsp;";
+		 }
+	     },
+	     header => 'Add / Delete',
+	     key_name => 'can be deleted',
+	     type => 'code',
+	    },
+	    {
+	     be_defined => 1,
+	     generate =>
+	     sub
+	     {
+		 my $self = shift;
+
 		 my $row_key = shift;
 
 		 my $row = shift;
@@ -486,6 +518,57 @@ sub document_morphologies
 				     },
 				    ],
 # 	     row_filter => sub { !ref $_[1]->{value}, },
+	     row_finalize =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $result = '';
+
+		 if ($editable)
+		 {
+		     $self->set_not_empty();
+
+		     $result .= "<tr $main::cb>" ;
+
+		     $result .= "<td align='center'>";
+		     $result .= $query->textfield(
+						  -name      => "field_$self->{name}_add_group-name",
+						  -default   => '',
+						  -override  => 1,
+						  -size      => 25,
+						  -maxlength => 36,
+						 );
+		     $result .= "</td>";
+
+		     $result .= "<td style='border-left-style: hidden'></td>";
+
+		     $result .= "<td align='center'>";
+		     $result .= $query->textfield(
+						  -name      => "field_$self->{name}_add_group-description",
+						  -default   => '',
+						  -override  => 1,
+						  -size      => 25,
+						  -maxlength => 36,
+						 );
+		     $result .= "</td>";
+
+#  		     my $columns = 2 * $#{$format_morphology_groups->{columns}} + 2;
+
+# 		     $result .= "<td align='center' colspan='$columns'>";
+
+# 		     $result
+# 			 .= $query->submit(
+# 					   -name  => "add_morphology-group_$self->{name}",
+# 					   -value => '  Add a Morphology Group ',
+# 					  );
+# 		     $result .= "</td>";
+
+		     $result .= "</tr>\n";
+		 }
+
+		 return($result);
+	     },
 	     separator => '/',
 	     sort => sub { return $_[2]->{number} <=> $_[3]->{number} },
 	     workflow => {
@@ -580,9 +663,9 @@ sub document_morphologies
 
 		 my $filter_data = shift;
 
-		 my $str = '';
+		 my $result = '';
 
-		 $str
+		 $result
 		     .= $query->a
 			 (
 			  {
@@ -591,7 +674,7 @@ sub document_morphologies
 			  "Analyze",
 			 );
 
-		 return($str);
+		 return($result);
 	     },
 	    },
 	    map
@@ -602,45 +685,45 @@ sub document_morphologies
 		  key_name => 'group' . $_,
 		  type => 'checkbox',
 		  be_defined => 1,
-		  generate =>
-		  sub
-		  {
-		      my $self = shift;
+# 		  generate =>
+# 		  sub
+# 		  {
+# 		      my $self = shift;
 
-		      my $row_key = shift;
+# 		      my $row_key = shift;
 
-		      my $row = shift;
+# 		      my $row = shift;
 
-		      my $filter_data = shift;
+# 		      my $filter_data = shift;
 
-		      if ($editable)
-		      {
-			  my $str = '';
+# 		      if ($editable)
+# 		      {
+# 			  my $result = '';
 
-			  print STDERR Dumper(\@_);
+# 			  print STDERR Dumper(\@_);
 
-			  my $default = $row->{group};
+# 			  my $default = $row->{group};
 
-			  my $value = [ 'None', 0 .. 10 ];
+# 			  my $value = [ 'None', 0 .. 10 ];
 
-			  my $name = "field_$self->{name}_configuration_${row_key}_1";
+# 			  my $name = "field_$self->{name}_configuration_${row_key}_1";
 
-			  $str
-			      .= $query->popup_menu
-				  (
-				   -name => $name,
-				   -default => $default,
-				   -values => $value,
-				   -override => 1,
-				  );
+# 			  $result
+# 			      .= $query->popup_menu
+# 				  (
+# 				   -name => $name,
+# 				   -default => $default,
+# 				   -values => $value,
+# 				   -override => 1,
+# 				  );
 
-			  return($str);
-		      }
-		      else
-		      {
-			  return "Undefined";
-		      }
-		  },
+# 			  return($result);
+# 		      }
+# 		      else
+# 		      {
+# 			  return "Undefined";
+# 		      }
+# 		  },
 		 }
 		);
 	    }
@@ -770,12 +853,6 @@ sub document_morphologies
 					    }
 					}
 				    }
-
-				    #t loop over all groups
-				    #t   define group name and number
-				    #t   insert morphologies into group that have yes for this group number
-
-				    #t merge new data into group definitions file
 
 # 				    # merge the new data into the old data
 
