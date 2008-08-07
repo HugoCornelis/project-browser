@@ -626,11 +626,29 @@ sub document_morphologies
 	       (
 		map
 		{
+		    my $group_number = $_;
+
+		    my $group_names
+			= [
+			   grep
+			   {
+			       $all_morphology_groups->{groups}->{$_}->{number} eq $group_number
+			   }
+			   keys %{$all_morphology_groups->{groups}},
+			  ];
+
+		    if ($#$group_names ne 0)
+		    {
+			die "$0: group_names inconsistency, group_names is $#$group_names";
+		    }
+
+		    my $group_name = $group_names->[0];
+
 		    (
-		     "group$_" => 'Yes'
+		     "group$group_number" => ( $all_morphology_groups->{groups}->{$group_name}->{morphologies}->{$morphology_name} ? 1 : 0),
 		    );
 		}
-		1 .. 10,
+		1 .. scalar keys %{$all_morphology_groups->{groups}},
 	       ),
 	       link => "?project_name=${project_name}&morphology_name=${morphology_name}",
 # 	       title => $morphology_description,
@@ -727,7 +745,7 @@ sub document_morphologies
 		 }
 		);
 	    }
-	    1 .. 10,
+	    1 .. scalar keys %{$all_morphology_groups->{groups}},
 	   ],
 	   hashkey => 'Morphology',
 	  };
