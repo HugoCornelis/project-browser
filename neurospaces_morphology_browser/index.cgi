@@ -1,3 +1,4 @@
+#!/usr/bin/perl -d:ptkdb -w
 #!/usr/bin/perl -w
 #!/usr/bin/perl -d:ptkdb -w
 #
@@ -400,7 +401,7 @@ sub document_morphologies
 		     return
 			 $query->submit
 			     (
-			      -name  => "delete_beacon-level_$self->{name}_$group->{number}",
+			      -name  => "delete_$self->{name}_$group->{number}",
 			      -value => ' Delete ',
 			      (!$cell_value ? (-disabled => 1) : ()),
 			     );
@@ -507,7 +508,7 @@ sub document_morphologies
 			$subproject_name ? ( subproject_name => $subproject_name, ) : (),
 			$module_name ? ( module_name => $module_name, ) : (),
 		       },
-	     name => 'morphologies-groups',
+	     name => 'morphology-groups',
 	     output_mode => 'html',
 	     regex_encapsulators => [
 				     {
@@ -536,8 +537,8 @@ sub document_morphologies
 						  -name      => "field_$self->{name}_add_group-name",
 						  -default   => '',
 						  -override  => 1,
-						  -size      => 25,
-						  -maxlength => 36,
+						  -size      => 35,
+						  -maxlength => 30,
 						 );
 		     $result .= "</td>";
 
@@ -548,23 +549,48 @@ sub document_morphologies
 						  -name      => "field_$self->{name}_add_group-description",
 						  -default   => '',
 						  -override  => 1,
-						  -size      => 25,
-						  -maxlength => 36,
+						  -size      => 35,
+						  -maxlength => 30,
 						 );
 		     $result .= "</td>";
 
-#  		     my $columns = 2 * $#{$format_morphology_groups->{columns}} + 2;
+		     $result .= "<td style='border-left-style: hidden'></td>";
+
+		     $result .= "<td align='center'>";
+		     $result .= (scalar keys %{$all_morphology_groups->{groups}}) + 1;
+		     $result .= "</td>";
+
+		     $result .= "<td style='border-left-style: hidden'></td>";
+
+#  		     my $columns = 2 * $#{$format_morphology_groups->{columns}} - 4;
 
 # 		     $result .= "<td align='center' colspan='$columns'>";
 
-# 		     $result
-# 			 .= $query->submit(
-# 					   -name  => "add_morphology-group_$self->{name}",
-# 					   -value => '  Add a Morphology Group ',
-# 					  );
-# 		     $result .= "</td>";
+		     $result .= "<td align='center'>";
+
+		     $result
+			 .= $query->submit(
+					   -name  => "add_morphology-group_$self->{name}",
+					   -value => ' Add ',
+					  );
+		     $result .= "</td>";
+
+		     $result .= "<td style='border-left-style: hidden'></td>";
+
+		     foreach my $column_format (4 .. $#{$format_morphology_groups->{columns}})
+		     {
+			 $result .= "<td align='center'>";
+
+			 $result .= "&nbsp;";
+
+			 $result .= "</td>";
+
+			 $result .= "<td style='border-left-style: hidden'></td>";
+
+		     }
 
 		     $result .= "</tr>\n";
+
 		 }
 
 		 return($result);
@@ -857,18 +883,9 @@ sub document_morphologies
 
 					    $morphology_name =~ s/^.*morphologies//;
 
-					    # if the morphology belongs to the group in the new configuration
+					    # set in the group descriptor
 
-					    if ($contents->{$morphology_name}->{"group" . $group->{number}} eq 'Yes')
-					    {
-						# set in the group descriptor
-
-						$group->{morphologies}->{$morphology_name} = 1;
-					    }
-					    else
-					    {
-						$group->{morphologies}->{$morphology_name} = 0;
-					    }
+					    $group->{morphologies}->{$morphology_name} = $contents->{$morphology_name}->{"group" . $group->{number}};
 					}
 				    }
 
