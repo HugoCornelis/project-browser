@@ -534,7 +534,7 @@ sub document_morphologies
 
 		     $result .= "<td align='center'>";
 		     $result .= $query->textfield(
-						  -name      => "field_$self->{name}_add_group-name",
+						  -name      => "field$self->{separator}$self->{name}_add_group-name",
 						  -default   => '',
 						  -override  => 1,
 						  -size      => 35,
@@ -546,7 +546,7 @@ sub document_morphologies
 
 		     $result .= "<td align='center'>";
 		     $result .= $query->textfield(
-						  -name      => "field_$self->{name}_add_group-description",
+						  -name      => "field$self->{separator}$self->{name}_add_group-description",
 						  -default   => '',
 						  -override  => 1,
 						  -size      => 35,
@@ -750,7 +750,7 @@ sub document_morphologies
 
 # 			  my $value = [ 'None', 0 .. 10 ];
 
-# 			  my $name = "field_$self->{name}_configuration_${row_key}_1";
+# 			  my $name = "field$self->{separator}$self->{name}_configuration_${row_key}_1";
 
 # 			  $result
 # 			      .= $query->popup_menu

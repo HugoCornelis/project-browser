@@ -191,13 +191,15 @@ sub _encapsulate_checkbox
 {
     my ($self, $path, $column, $contents, $options) = @_;
 
+    my $separator = $self->{separator} || '_';
+
     return
 	$self->{CGI}->checkbox
 	    (
 	     -checked => $contents,
-	     -id => "checkbox_$path",
+	     -id => "checkbox${separator}$path",
 	     -label => '',
-	     -name => "checkbox_$path",
+	     -name => "checkbox${separator}$path",
 	     -value => '',
 	    );
 }

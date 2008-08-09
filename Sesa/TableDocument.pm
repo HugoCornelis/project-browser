@@ -707,13 +707,20 @@ sub parse_input
     {
 	my $key = pop(@query_params) ;
 
-	next if $key !~ /^field$separator/;
+	if ($key !~ /^field$separator/
+	    && $key !~ /^checkbox$separator/)
+	{
+	    next;
+	}
 
 	$keys_to_handle++;
 
 	# remove type indicator
 
-	$key =~ s/^field$separator//;
+# 	$key =~ s/^field$separator//;
+	$key =~ s/^([^${separator}]*?)${separator}//;
+
+	my $type = $1;
 
 	# remove name of the document
 
@@ -745,7 +752,7 @@ sub parse_input
 
 		    my $parameter_name = "${column_key}$separator${row}";
 
-		    my $value = $self->parameter($parameter_name);
+		    my $value = $self->parameter($type, $parameter_name);
 
 		    # if we have a valid value
 

@@ -1019,13 +1019,15 @@ sub parameter
 {
     my $self = shift;
 
+    my $type = shift;
+
     my $parameter_name = shift;
 
     my $document_name = $self->{name};
 
     my $separator = $self->{separator} || '_';
 
-    $parameter_name = "field${separator}${document_name}${separator}${parameter_name}";
+    $parameter_name = "${type}${separator}${document_name}${separator}${parameter_name}";
 
     my $value = $self->{CGI}->param($parameter_name);
 
