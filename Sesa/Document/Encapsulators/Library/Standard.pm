@@ -47,6 +47,19 @@ sub _decapsulate_checkbox
 {
     my ($self, $path, $column, $contents, $value, $options) = @_;
 
+    # CGI passes true values back as the empty string
+
+    if ($value eq '')
+    {
+	# so we replace that with a perl true value
+
+	$value = 1;
+    }
+    else
+    {
+	$value = 0;
+    }
+
     return($path, $value);
 }
 
