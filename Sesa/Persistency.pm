@@ -1466,11 +1466,18 @@ sub create_backup_and_write
 
     # write new content to new file
 
-    str2file($contents, $filename);
+#     str2file($contents, $filename);
 
-    # set owner of old and new file to 'sems'
+    use YAML 'DumpFile';
 
-    any_config_set_owner('sems', $backup_name, $filename, );
+    eval
+    {
+	DumpFile($filename, $contents);
+    };
+
+#     # set owner of old and new file to 'sems'
+
+#     any_config_set_owner('sems', $backup_name, $filename, );
 
     return 1;
 }

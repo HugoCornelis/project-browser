@@ -353,7 +353,7 @@ sub document_morphologies
 	     },
 	    );
 
-    my $all_groups = $all_morphology_groups->{groups};
+#     my $all_groups = $all_morphology_groups->{groups};
 
     my $format_morphology_groups
 	= {
@@ -847,7 +847,7 @@ sub document_morphologies
 
 				    # loop over all groups
 
-				    use Neurospaces::Project::Modules::Morphology 'morphology_groups_read';
+				    use Neurospaces::Project::Modules::Morphology 'morphology_groups_read', 'morphology_groups_write';
 
 				    my $all_morphology_groups
 					= morphology_groups_read
@@ -901,6 +901,16 @@ sub document_morphologies
 # 				    # write the new content
 
 # 				    specification_write($module_name, $scheduler, [ $submitted_request ] );
+
+				    my $error
+					= morphology_groups_write
+					    (
+					     {
+					      name => $project_name,
+					      root => $project_root,
+					     },
+					     $all_morphology_groups,
+					    );
 
 				    return $contents;
 				},
