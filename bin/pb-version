@@ -1,0 +1,93 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+use strict;
+
+
+$| = 1;
+
+
+use Getopt::Long;
+
+use YAML;
+
+
+$SIG{__DIE__}
+    = sub {
+	use Carp;
+
+	confess @_;
+    };
+
+
+our $option_verbose;
+
+my $exit_code = 0;
+
+
+sub main
+{
+    read_cmd_line();
+
+    # nothing here yet.
+}
+
+
+sub read_cmd_line
+{
+    my $option_help;
+    my $option_version;
+
+    my $result
+	= GetOptions
+	    (
+	     "help!" => \$option_help,
+	     "v|verbose+" => \$option_verbose,
+	     "version" => \$option_version,
+	    );
+
+    if (1 || $option_version)
+    {
+	my $version = version();
+
+	print $version . "\n";
+
+	exit 1;
+    }
+
+    if ($option_help)
+    {
+	print
+	    "
+$0 <options>
+
+$0: version information of the neurospaces project-browser
+
+options:
+    help               print usage information.
+    verbose            set verbosity level.
+    version            give version information.
+";
+
+	exit 1;
+    }
+
+}
+
+
+sub version
+{
+    # $Format: "    my $version=\"${package}-${label}\";"$
+    my $version="project-browser-python-2";
+
+    return $version;
+}
+
+
+main();
+
+
+exit $exit_code;
+
+

@@ -17,12 +17,12 @@ dnl //////////////////////////////////////////////////////////////////////////
 AC_PREREQ(2.59)
 
 # $Format: "AC_INIT(${package}, ${label}, ${email})"$
-AC_INIT(neurospacesweb, nodist, hugo.cornelis@gmail.com)
+AC_INIT(project-browser, python-2, hugo.cornelis@gmail.com)
 
 AC_CONFIG_SRCDIR([neurospaces_output_browser/output.cgi])
 
 # $Format: "AM_INIT_AUTOMAKE(${package}, ${label})"$
-AM_INIT_AUTOMAKE(neurospacesweb, nodist)
+AM_INIT_AUTOMAKE(project-browser, python-2)
 
 # Checks for programs.
 

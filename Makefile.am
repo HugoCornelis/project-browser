@@ -13,11 +13,12 @@
 ##############################################################################
 
 
-dist_bin_SCRIPTS =
+dist_bin_SCRIPTS = \
+	bin/pb-create-module \
+	bin/pb-pull \
+	bin/pb-push \
+	bin/pb-version
 
-# no tests yet!
-# the perl library is copied overhere.
-#
 # The variable EXTRA_DIST could also be used here.
 
 dist-hook:

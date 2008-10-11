@@ -121,7 +121,12 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-dist_bin_SCRIPTS = 
+dist_bin_SCRIPTS = \
+	bin/pb-create-module \
+	bin/pb-pull \
+	bin/pb-push \
+	bin/pb-version
+
 
 #t make this one configurable: $prefix (and distcheck) needs to work
 usermindir = @USERMIN_DIR@
@@ -191,6 +196,7 @@ CTAGS:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
+	$(mkdir_p) $(distdir)/bin
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -412,9 +418,6 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-info-am
 	uninstall-dist_binSCRIPTS uninstall-info-am
 
 
-# no tests yet!
-# the perl library is copied overhere.
-#
 # The variable EXTRA_DIST could also be used here.
 
 dist-hook:
