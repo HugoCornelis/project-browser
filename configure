@@ -274,7 +274,7 @@ PACKAGE_STRING='project-browser python-2'
 PACKAGE_BUGREPORT='hugo.cornelis@gmail.com'
 
 ac_unique_file="neurospaces_output_browser/output.cgi"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar USERMIN_MODULES USERMIN_DIR LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar PERL_MODULES USERMIN_MODULES USERMIN_DIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1677,6 +1677,9 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
+PERL_MODULES=`(cd perl && find . -name "*.pm" -printf "%p ")`
+
+
 # Checks for programs.
 
 # Checks for libraries.
@@ -1698,7 +1701,7 @@ USERMIN_DIR=/usr/share/usermin
 
 
 
-          ac_config_files="$ac_config_files Makefile"
+                              ac_config_files="$ac_config_files Makefile perl/Makefile tests/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -2253,6 +2256,8 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+  "perl/Makefile" ) CONFIG_FILES="$CONFIG_FILES perl/Makefile" ;;
+  "tests/Makefile" ) CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
@@ -2358,6 +2363,7 @@ s,@am__leading_dot@,$am__leading_dot,;t t
 s,@AMTAR@,$AMTAR,;t t
 s,@am__tar@,$am__tar,;t t
 s,@am__untar@,$am__untar,;t t
+s,@PERL_MODULES@,$PERL_MODULES,;t t
 s,@USERMIN_MODULES@,$USERMIN_MODULES,;t t
 s,@USERMIN_DIR@,$USERMIN_DIR,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t

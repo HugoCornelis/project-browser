@@ -24,6 +24,9 @@ AC_CONFIG_SRCDIR([neurospaces_output_browser/output.cgi])
 # $Format: "AM_INIT_AUTOMAKE(${package}, ${label})"$
 AM_INIT_AUTOMAKE(project-browser, python-2)
 
+PERL_MODULES=`(cd perl && find . -name "*.pm" -printf "%p ")`
+AC_SUBST(PERL_MODULES)
+
 # Checks for programs.
 
 # Checks for libraries.
@@ -45,7 +48,10 @@ USERMIN_DIR=/usr/share/usermin
 AC_SUBST(USERMIN_DIR)
 
 
-AC_CONFIG_FILES([ Makefile ])
+AC_CONFIG_FILES([Makefile
+		 perl/Makefile
+		 tests/Makefile
+		])
 
 AC_OUTPUT
 
