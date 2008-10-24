@@ -1,4 +1,3 @@
-#!/usr/bin/perl -d:ptkdb -w
 #!/usr/bin/perl -w
 #!/usr/bin/perl -d:ptkdb -w
 #
