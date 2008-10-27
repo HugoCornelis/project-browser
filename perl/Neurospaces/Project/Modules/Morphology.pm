@@ -34,7 +34,7 @@ sub morphologies_read
 
     #t replace with File::Find;
 
-    my $result = [ sort map { chomp; $_; } `find "$project_root/$project_name/morphologies" -name "*.ndf" -o -name "*.p" -o -iname "*.swc"`, ];
+    my $result = [ sort map { chomp; $_; } `find "$project_root/$project_name/morphologies" -iname "*.ndf" -o -iname "*.p" -o -iname "*.swc"`, ];
 
     return $result;
 }
