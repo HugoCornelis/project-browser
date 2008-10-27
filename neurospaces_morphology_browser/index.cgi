@@ -159,6 +159,18 @@ if ($project_name && $morphology_name)
 	   ),
 	  };
 
+    my $structure_operations
+	= {
+	   branchpoints => {
+			    command => "echo 'segmentersetbase $morphology_name_short' | neurospaces '$project_root/$project_name/morphologies/$morphology_name' --no-use-library --query",
+			    description => "Nr. Branchpoints",
+			   },
+	   branchpoints2 => {
+			     command => "neurospaces --backend-option '-A' --command 'segmentersetbase $morphology_name_short' --traversal-symbol / '--type' '^T_sym_segment\$' '--reporting-fields' 'BRANCHPOINT' '$project_root/$project_name/morphologies/$morphology_name'",
+			     description => "Nr. Branchpoints 2",
+			    },
+	  };
+
     my $other_operations
 	= {
 	   morphology_visualizer => {
@@ -223,9 +235,26 @@ if ($project_name && $morphology_name)
 
     $all_operations_structured
 	= {
-	   aggregator_operations => $aggregator_operations,
-	   channel_operations => $channel_operations,
-	   other_operations => $other_operations,
+	   aggregator_operations => {
+				     description => 'operations that operate on the whole morphology',
+				     operations => $aggregator_operations,
+				     priority => 20,
+				    },
+	   channel_operations => {
+				  description => 'operations that report on channel distribution',
+				  operations => $channel_operations,
+				  priority => 30,
+				 },
+	   other_operations => {
+				description => 'other operations',
+				operations => $other_operations,
+				priority => 40,
+			       },
+	   structure_operations => {
+				    description => 'operations that quantify the morphology structure',
+				    operations => $structure_operations,
+				    priority => 10,
+				   },
 	  };
 
     $all_operations
@@ -233,6 +262,7 @@ if ($project_name && $morphology_name)
 	   %$aggregator_operations,
 	   %$channel_operations,
 	   %$other_operations,
+	   %$structure_operations,
 	  };
 
     # get project local information
@@ -722,10 +752,12 @@ sub document_morphologies
 	    },
 	    map
 	    {
+		my $group_name = $_;
+
 		(
 		 {
-		  header => 'Grp ' . $_,
-		  key_name => 'group' . $_,
+		  header => $group_name,
+		  key_name => 'group' . $all_morphology_groups->{groups}->{$group_name}->{number},
 		  type => 'checkbox',
 		  be_defined => 1,
 # 		  generate =>
@@ -770,7 +802,7 @@ sub document_morphologies
 		 }
 		);
 	    }
-	    1 .. scalar keys %{$all_morphology_groups->{groups}},
+	    keys %{$all_morphology_groups->{groups}},
 	   ],
 	   hashkey => 'Morphology',
 	  };
@@ -951,15 +983,24 @@ sub formalize_morphology
 
     my $morphology_name = shift;
 
-    foreach my $operation_group_name (sort keys %$all_operations_structured)
+    foreach my $operation_group_name (sort
+				      {
+					  $all_operations_structured->{$a}->{priority} <=> $all_operations_structured->{$b}->{priority}
+				      }
+				      keys %$all_operations_structured)
     {
-	my $operation_group = $all_operations_structured->{$operation_group_name};
+	my $operation_group = $all_operations_structured->{$operation_group_name}->{operations};
 
 	my @links;
 	my @titles;
 	my @icons;
 
-	print "<h2>$operation_group_name</h2>" ;
+	print "
+<center>
+<h2>$operation_group_name</h2>
+$all_operations_structured->{$operation_group_name}->{description}
+</center>
+" ;
 
 	foreach my $operation_name (sort keys %$operation_group)
 	{
