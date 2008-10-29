@@ -162,13 +162,72 @@ if ($project_name && $morphology_name)
     my $structure_operations
 	= {
 	   branchpoints => {
-			    command => "echo 'segmentersetbase $morphology_name_short' | neurospaces '$project_root/$project_name/morphologies/$morphology_name' --no-use-library --query",
-			    description => "Nr. Branchpoints",
-			   },
-	   branchpoints2 => {
-			     command => "neurospaces --backend-option '-A' --command 'segmentersetbase $morphology_name_short' --traversal-symbol / '--type' '^T_sym_segment\$' '--reporting-fields' 'BRANCHPOINT' '$project_root/$project_name/morphologies/$morphology_name'",
-			     description => "Nr. Branchpoints 2",
+			    command =>
+			    sub
+			    {
+				use Neurospaces::Morphology;
+
+				my $morphology
+				    = Neurospaces::Morphology->new
+					(
+					 {
+					  backend_options => [ '-A', ],
+					  filename => "$project_root/$project_name/morphologies/$morphology_name",
+					 },
+					);
+
+				my $branchpoints = $morphology->branchpoints($morphology_name_short);
+
+				return { branchpoints => $branchpoints, };
 			    },
+			    description => "Branchpoints",
+			   },
+	   tips => {
+		    command => "echo 'segmentertips $morphology_name_short' | neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --query 2>&1",
+		    description => "Dendritic tips",
+		   },
+	   tips2 => {
+		     command =>
+		     sub
+		     {
+			 use Neurospaces::Morphology;
+
+			 my $morphology
+			     = Neurospaces::Morphology->new
+				 (
+				  {
+				   backend_options => [ '-A', ],
+				   filename => "$project_root/$project_name/morphologies/$morphology_name",
+				  },
+				 );
+
+			 my $tips = $morphology->dendritic_tips($morphology_name_short);
+
+ 			 return { summary => $tips->{linearize} , tips => $tips->{tips}->{names}, };
+		     },
+		     description => "Dendritic tips2",
+		    },
+	   tip_lengths => {
+			   command =>
+			   sub
+			   {
+			       use Neurospaces::Morphology;
+
+			       my $morphology
+				   = Neurospaces::Morphology->new
+				       (
+					{
+					 backend_options => [ '-A', ],
+					 filename => "$project_root/$project_name/morphologies/$morphology_name",
+					},
+				       );
+
+			       my $tip_lengths = $morphology->tip_lengths($morphology_name_short);
+
+			       return { tip_lengths => $tip_lengths, };
+			   },
+			   description => "Tip lengths",
+			  },
 	  };
 
     my $other_operations
@@ -219,10 +278,6 @@ if ($project_name && $morphology_name)
 		      command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --algorithm Spines 2>&1",
 		      description => "Spines instance algorithm",
 		     },
-	   tips => {
-		    command => "echo 'segmentertips $morphology_name_short' | neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --query 2>&1",
-		    description => "Dendritic tips",
-		   },
 	   totalsurface => {
 			    command => "neurospaces '$project_root/$project_name/morphologies/$morphology_name' --force-library --traversal / --type '^T_sym_cell\$' --reporting-field TOTALSURFACE 2>&1",
 			    description => "Total dendritic surface",
@@ -1034,26 +1089,42 @@ sub formalize_operation
 
     my $command = $all_operations->{$operation_name}->{command};
 
-    print "<code>\n";
+    if ($command =~ m'CODE')
+    {
+	my $result = &$command();
 
-    print "Executing:\n$command\n";
+	print "<pre>\n";
 
-    print "</code>\n";
+	use YAML;
 
-    print "<pre>\n";
+	print Dump($result);
 
-    my $output = `$command`;
+	print "</pre>\n";
 
-    my $count = ($output =~ tr/\n/\n/);
+	print "<hr>" ;
+    }
+    else
+    {
+	print "<code>\n";
 
-    print "$count lines of output\n";
+	print "Executing:\n$command\n";
 
-    print $output;
+	print "</code>\n";
 
-    print "</pre>\n";
+	print "<pre>\n";
 
-    print "<hr>" ;
+	my $output = `$command`;
 
+	my $count = ($output =~ tr/\n/\n/);
+
+	print "$count lines of output\n";
+
+	print $output;
+
+	print "</pre>\n";
+
+	print "<hr>" ;
+    }
 }
 
 
