@@ -287,14 +287,15 @@ if ($project_name && $morphology_name)
 						    return
 						    {
 # 						     1 => $morphology,
-						     average_diameter => $average_diameter,
-						     average_tip_lengths => $average_tip_lengths,
-						     branchpoints => scalar keys %$branchpoints,
-						     average_branchpoints_per_tip => $average_branchpoints_per_tip,
-# 						     tips => $tips,
-						     total_length => $total_length,
-						     total_surface_area => $total_surface_area,
-						     total_volume => $total_volume,
+# 						     average_diameter => $average_diameter,
+# 						     average_tip_lengths => $average_tip_lengths,
+# 						     branchpoints => scalar keys %$branchpoints,
+# 						     average_branchpoints_per_tip => $average_branchpoints_per_tip,
+# # 						     tips => $tips,
+# 						     total_length => $total_length,
+# 						     total_surface_area => $total_surface_area,
+# 						     total_volume => $total_volume,
+						     %{$morphology->structure_summary($morphology_name_short)},
 						    };
 						},
 						description => 'Summary of the cell structure',
