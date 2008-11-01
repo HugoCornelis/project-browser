@@ -284,11 +284,11 @@ if ($project_name && $morphology_name)
 
 						    return
 						    {
-						     1 => $morphology,
+# 						     1 => $morphology,
 						     average_diameter => $average_diameter,
 						     average_tip_lengths => $average_tip_lengths,
-						     branchpoints => $branchpoints,
-						     tips => $tips,
+						     branchpoints => scalar keys %$branchpoints,
+# 						     tips => $tips,
 						     total_length => $total_length,
 						     total_surface_area => $total_surface_area,
 						     total_volume => $total_volume,
