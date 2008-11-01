@@ -161,6 +161,29 @@ if ($project_name && $morphology_name)
 
     my $structure_operations
 	= {
+	   average_diameter => {
+				command =>
+				sub
+				{
+				    #t need stddev.
+
+				    use Neurospaces::Morphology;
+
+				    my $morphology
+					= Neurospaces::Morphology->new
+					    (
+					     {
+					      backend_options => [ '-A', ],
+					      filename => "$project_root/$project_name/morphologies/$morphology_name",
+					     },
+					    );
+
+				    my $average_diameter = $morphology->average_diameter($morphology_name_short);
+
+				    return { average_diameter => $average_diameter, };
+				},
+				description => "Average dendritic diameter",
+			       },
 	   branchpoints => {
 			    command =>
 			    sub
@@ -228,6 +251,51 @@ if ($project_name && $morphology_name)
 			   },
 			   description => "Tip lengths",
 			  },
+	  };
+
+    my $structure_summary_operations
+	= {
+	   structure_summary_operations_all => {
+						command =>
+						sub
+						{
+						    use Neurospaces::Morphology;
+
+						    my $morphology
+							= Neurospaces::Morphology->new
+							    (
+							     {
+							      backend_options => [ '-A', ],
+							      filename => "$project_root/$project_name/morphologies/$morphology_name",
+							     },
+							    );
+
+						    my $average_diameter = $morphology->average_diameter($morphology_name_short);
+
+						    my $branchpoints = $morphology->branchpoints($morphology_name_short);
+
+						    my $tips = $morphology->dendritic_tips($morphology_name_short);
+
+						    my $average_tip_lengths = $morphology->average_tip_lengths($morphology_name_short);
+
+						    my $total_surface_area = $morphology->total_surface_area($morphology_name_short);
+						    my $total_volume = $morphology->total_volume($morphology_name_short);
+						    my $total_length = $morphology->total_length($morphology_name_short);
+
+						    return
+						    {
+						     1 => $morphology,
+						     average_diameter => $average_diameter,
+						     average_tip_lengths => $average_tip_lengths,
+						     branchpoints => $branchpoints,
+						     tips => $tips,
+						     total_length => $total_length,
+						     total_surface_area => $total_surface_area,
+						     total_volume => $total_volume,
+						    };
+						},
+						description => 'Summary of the cell structure',
+					       },
 	  };
 
     my $other_operations
@@ -306,10 +374,15 @@ if ($project_name && $morphology_name)
 				priority => 40,
 			       },
 	   structure_operations => {
-				    description => 'operations that quantify the morphology structure',
+				    description => 'detailed operations that quantify the morphology structure',
 				    operations => $structure_operations,
 				    priority => 10,
 				   },
+	   structure_summary_operations => {
+					    description => 'operations that quantify the morphology structure',
+					    operations => $structure_summary_operations,
+					    priority => 5,
+					   },
 	  };
 
     $all_operations
@@ -318,6 +391,7 @@ if ($project_name && $morphology_name)
 	   %$channel_operations,
 	   %$other_operations,
 	   %$structure_operations,
+	   %$structure_summary_operations,
 	  };
 
     # get project local information
