@@ -550,13 +550,15 @@ sub document_morphologies
 	     generate =>
 	     sub
 	     {
+		 print STDERR "generate:\n", Dumper(\@_);
+
 		 my $self = shift;
 
 		 my $group_name = shift;
 
 		 my $group = shift;
 
-		 my $cell_value = shift;
+		 my $filter_data = shift;
 
 		 if ($editable)
 		 {
@@ -565,7 +567,7 @@ sub document_morphologies
 			     (
 			      -name  => "delete_$self->{name}_$group->{number}",
 			      -value => ' Delete ',
-			      (!$cell_value ? (-disabled => 1) : ()),
+			      (!$group->{'can be deleted'} ? (-disabled => 1) : ()),
 			     );
 		 }
 		 else
@@ -590,9 +592,9 @@ sub document_morphologies
 
 		 my $filter_data = shift;
 
-		 my $str = '';
+		 my $result = '';
 
-		 $str
+		 $result
 		     .= $query->a
 			 (
 			  {
@@ -601,7 +603,7 @@ sub document_morphologies
 			  "Analyze",
 			 );
 
-		 return($str);
+		 return($result);
 	     },
 	     header => 'Operation 1',
 	     key_name => 'operation 1',
@@ -663,7 +665,8 @@ sub document_morphologies
 	     has_submit => $editable,
 	     has_reset => $editable,
 	     header => '<h2> Morphology Groups </h2>
-<h4> Analyze morphology group characteristics. </h4>',
+<h4> Analyze morphology group characteristics. </h4>
+<h5> Delete existing groups and create new groups, <br> then populate the groups with morphologies using the panel below. </h5>',
 	     hidden => {
 			session_id => $session_id_digest,
 			$project_name ? ( project_name => $project_name, ) : (),
@@ -980,8 +983,8 @@ sub document_morphologies
 	     format => $format_morphologies,
 	     has_submit => $editable,
 	     has_reset => $editable,
-	     header => '<h2> Morphology Names </h2>
-<h4> Define morphology groups, then submit for further analysis. </h4>',
+	     header => '<h2> Morphologies </h2>
+<h4> Populate morphology groups and analyse individual morphologies. </h4>',
 	     hidden => {
 			session_id => $session_id_digest,
 			$project_name ? ( project_name => $project_name, ) : (),
