@@ -274,6 +274,8 @@ if ($project_name && $morphology_name)
 
 						    my $branchpoints = $morphology->branchpoints($morphology_name_short);
 
+						    my $average_branchpoints_per_tip = $morphology->average_branchpoints_per_tip($morphology_name_short);
+
 						    my $tips = $morphology->dendritic_tips($morphology_name_short);
 
 						    my $average_tip_lengths = $morphology->average_tip_lengths($morphology_name_short);
@@ -288,6 +290,7 @@ if ($project_name && $morphology_name)
 						     average_diameter => $average_diameter,
 						     average_tip_lengths => $average_tip_lengths,
 						     branchpoints => scalar keys %$branchpoints,
+						     average_branchpoints_per_tip => $average_branchpoints_per_tip,
 # 						     tips => $tips,
 						     total_length => $total_length,
 						     total_surface_area => $total_surface_area,
