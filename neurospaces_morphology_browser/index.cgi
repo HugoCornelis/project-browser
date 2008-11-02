@@ -984,7 +984,8 @@ sub document_morphologies
 	     has_submit => $editable,
 	     has_reset => $editable,
 	     header => '<h2> Morphologies </h2>
-<h4> Populate morphology groups and analyse individual morphologies. </h4>',
+<h4> Use the checkboxes to populate the morphology groups
+<br> or use the hyperlinks to analyse individual morphologies. </h4>',
 	     hidden => {
 			session_id => $session_id_digest,
 			$project_name ? ( project_name => $project_name, ) : (),
