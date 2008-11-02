@@ -1256,7 +1256,7 @@ sub main
 
 	&redirect($url, 'Project Browser');
     }
-    elsif (!$morphology_name)
+    elsif (!$morphology_name and !$morphology_group_name)
     {
 	&header("Morphology Browser: $project_name", "", undef, 1, 1, 0, '');
 
@@ -1274,29 +1274,44 @@ sub main
 
 	&footer("/", $::text{'index'}, "/neurospaces_project_browser/?project_name=${project_name}", 'This Project', "/neurospaces_project_browser/", 'All Projects');
     }
-    elsif (!$operation_name)
+    elsif ($morphology_group_name)
     {
-	&header("Morphology Browser: $morphology_name", "", undef, 1, 1, 0, '');
+	&header("Morphology Group Browser: $morphology_group_name", "", undef, 1, 1, 0, '');
 
 	print "<hr>\n";
 
-	formalize_morphology($project_name, $morphology_name);
+	formalize_morphology_group($project_name, $morphology_group_name);
 
 	# finalize (web|user)min specific stuff.
 
 	&footer("index.cgi?project_name=${project_name}", "All Morphologies");
     }
-    else
+    elsif ($morphology_name)
     {
-	&header("Morphology Browser: $morphology_name", "", undef, 1, 1, 0, '');
+	if (!$operation_name)
+	{
+	    &header("Morphology Browser: $morphology_name", "", undef, 1, 1, 0, '');
 
-	print "<hr>\n";
+	    print "<hr>\n";
 
-	formalize_operation($project_name, $morphology_name, $operation_name);
+	    formalize_morphology($project_name, $morphology_name);
 
-	# finalize (web|user)min specific stuff.
+	    # finalize (web|user)min specific stuff.
 
-	&footer("index.cgi?project_name=${project_name}", "All Morphologies");
+	    &footer("index.cgi?project_name=${project_name}", "All Morphologies");
+	}
+	else
+	{
+	    &header("Morphology Browser: $morphology_name", "", undef, 1, 1, 0, '');
+
+	    print "<hr>\n";
+
+	    formalize_operation($project_name, $morphology_name, $operation_name);
+
+	    # finalize (web|user)min specific stuff.
+
+	    &footer("index.cgi?project_name=${project_name}", "All Morphologies");
+	}
     }
 }
 
