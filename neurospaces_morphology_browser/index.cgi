@@ -83,6 +83,8 @@ my $module_name = $query->param('module_name');
 
 my $morphology_name = $query->param('morphology_name');
 
+my $morphology_group_name = $query->param('morphology_group_name');
+
 my $morphology_name_short = $morphology_name;
 
 if (defined $morphology_name_short)
@@ -580,7 +582,7 @@ sub document_morphologies
 	     type => 'code',
 	    },
 	    {
-	     be_defined => 1,
+	     filter_defined => 1,
 	     generate =>
 	     sub
 	     {
@@ -598,15 +600,15 @@ sub document_morphologies
 		     .= $query->a
 			 (
 			  {
-			   -href => $row->{link},
+			   -href => "?project_name=${project_name}&morphology_group_name=${row_key}",
 			  },
 			  "Analyze",
 			 );
 
 		 return($result);
 	     },
-	     header => 'Operation 1',
-	     key_name => 'operation 1',
+	     header => 'Analyze',
+	     key_name => 'analyze',
 	     type => 'code',
 	    },
 	   ],
@@ -683,7 +685,21 @@ sub document_morphologies
 				      type => 'constant',
 				     },
 				    ],
-# 	     row_filter => sub { !ref $_[1]->{value}, },
+ 	     row_filter =>
+	     sub
+	     {
+# 		 my $row_key = shift;
+
+# 		 my $row = shift;
+
+		 # add the analyze key to generate the hyperlinks
+
+		 return
+		 {
+		  analyze => 1,
+		  %{$_[1]},
+		 };
+	     },
 	     row_finalize =>
 	     sub
 	     {
