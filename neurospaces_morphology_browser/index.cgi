@@ -92,6 +92,8 @@ if (defined $morphology_name_short)
     $morphology_name_short =~ s/.*\///;
 
     $morphology_name_short =~ s((.*)\..*$)(/$1);
+
+    $morphology_name_short =~ s(\.)(_)g;
 }
 
 my $operation_name = $query->param('operation_name');
@@ -272,19 +274,19 @@ if ($project_name && $morphology_name)
 							     },
 							    );
 
-						    my $average_diameter = $morphology->average_diameter($morphology_name_short);
+# 						    my $average_diameter = $morphology->average_diameter($morphology_name_short);
 
-						    my $branchpoints = $morphology->branchpoints($morphology_name_short);
+# 						    my $branchpoints = $morphology->branchpoints($morphology_name_short);
 
-						    my $average_branchpoints_per_tip = $morphology->average_branchpoints_per_tip($morphology_name_short);
+# 						    my $average_branchpoints_per_tip = $morphology->average_branchpoints_per_tip($morphology_name_short);
 
-						    my $tips = $morphology->dendritic_tips($morphology_name_short);
+# 						    my $tips = $morphology->dendritic_tips($morphology_name_short);
 
-						    my $average_tip_lengths = $morphology->average_tip_lengths($morphology_name_short);
+# 						    my $average_tip_lengths = $morphology->average_tip_lengths($morphology_name_short);
 
-						    my $total_surface_area = $morphology->total_surface_area($morphology_name_short);
-						    my $total_volume = $morphology->total_volume($morphology_name_short);
-						    my $total_length = $morphology->total_length($morphology_name_short);
+# 						    my $total_surface_area = $morphology->total_surface_area($morphology_name_short);
+# 						    my $total_volume = $morphology->total_volume($morphology_name_short);
+# 						    my $total_length = $morphology->total_length($morphology_name_short);
 
 						    return
 						    {
@@ -1174,6 +1176,71 @@ $all_operations_structured->{$operation_group_name}->{description}
 	print "<hr>" ;
     }
 
+}
+
+
+sub formalize_morphology_group
+{
+    my $project_name = shift;
+
+    my $morphology_group_name = shift;
+
+    use Neurospaces::Project::Modules::Morphology 'morphology_groups_read';
+
+    my $all_morphology_groups
+	= morphology_groups_read
+	    (
+	     {
+	      name => $project_name,
+	      root => $project_root,
+	     },
+	    );
+
+    my $group = $all_morphology_groups->{groups}->{$morphology_group_name};
+
+    my $morphologies = $group->{morphologies};
+
+    foreach my $morphology_name (grep
+				 {
+				     $morphologies->{$_}
+				 }
+				 keys %$morphologies)
+    {
+	{
+	    use Neurospaces::Morphology;
+
+	    my $morphology
+		= Neurospaces::Morphology->new
+		    (
+		     {
+		      backend_options => [ '-A', ],
+		      filename => "$project_root/$project_name/morphologies/$morphology_name",
+		     },
+		    );
+
+	    my $morphology_name_short = $morphology_name;
+
+	    if (defined $morphology_name_short)
+	    {
+		$morphology_name_short =~ s/.*\///;
+
+		$morphology_name_short =~ s((.*)\..*$)(/$1);
+
+		$morphology_name_short =~ s(\.)(_)g;
+	    }
+	    else
+	    {
+		die "$0: cannot determine morphology_name_short from $morphology_name";
+	    }
+
+	    my $morphology_properties
+		= {
+		   %{$morphology->structure_summary($morphology_name_short)},
+		  };
+
+	    print STDERR Dumper($morphology_properties);
+	}
+    }
 }
 
 
