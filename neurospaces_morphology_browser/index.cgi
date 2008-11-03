@@ -602,7 +602,37 @@ sub document_morphologies
 		     .= $query->a
 			 (
 			  {
-			   -href => "?project_name=${project_name}&morphology_group_name=${row_key}",
+			   -href => "?project_name=${project_name}&morphology_group_name=${row_key}&operation_name=view",
+			  },
+			  "View",
+			 );
+
+		 return($result);
+	     },
+	     header => 'View',
+	     key_name => 'view',
+	     type => 'code',
+	    },
+	    {
+	     filter_defined => 1,
+	     generate =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $row_key = shift;
+
+		 my $row = shift;
+
+		 my $filter_data = shift;
+
+		 my $result = '';
+
+		 $result
+		     .= $query->a
+			 (
+			  {
+			   -href => "?project_name=${project_name}&morphology_group_name=${row_key}&operation_name=analyze",
 			  },
 			  "Analyze",
 			 );
@@ -699,6 +729,7 @@ sub document_morphologies
 		 return
 		 {
 		  analyze => 1,
+		  view => 1,
 		  %{$_[1]},
 		 };
 	     },
@@ -859,7 +890,8 @@ sub document_morphologies
 		}
 		1 .. scalar keys %{$all_morphology_groups->{groups}},
 	       ),
-	       link => "?project_name=${project_name}&morphology_name=${morphology_name}",
+	       view => "?project_name=${project_name}&morphology_name=${morphology_name}&operation_name=view",
+	       analyze => "?project_name=${project_name}&morphology_name=${morphology_name}&operation_name=analyze",
 # 	       title => $morphology_description,
 	      };
     }
@@ -875,8 +907,38 @@ sub document_morphologies
 	     be_defined => 1,
 	    },
 	    {
+	     header => 'View',
+	     key_name => 'view',
+	     type => 'code',
+	     be_defined => 1,
+	     generate =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $row_key = shift;
+
+		 my $row = shift;
+
+		 my $filter_data = shift;
+
+		 my $result = '';
+
+		 $result
+		     .= $query->a
+			 (
+			  {
+			   -href => $row->{link},
+			  },
+			  "View",
+			 );
+
+		 return($result);
+	     },
+	    },
+	    {
 	     header => 'Analyze',
-	     key_name => 'link',
+	     key_name => 'analyze',
 	     type => 'code',
 	     be_defined => 1,
 	     generate =>
@@ -1132,7 +1194,7 @@ sub formalize_morphologies
 }
 
 
-sub formalize_morphology
+sub formalize_morphology_analyze
 {
     my $project_name = shift;
 
@@ -1179,7 +1241,26 @@ $all_operations_structured->{$operation_group_name}->{description}
 }
 
 
-sub formalize_morphology_group
+sub formalize_morphology_group_operation
+{
+    my $project_name = shift;
+
+    my $morphology_group_name = shift;
+
+    my $operation_name = shift;
+
+    if ($operation_name eq 'analyze')
+    {
+	return formalize_morphology_group_analyze($project_name, $morphology_group_name);
+    }
+    elsif ($operation_name eq 'view')
+    {
+	return formalize_morphology_group_view($project_name, $morphology_group_name);
+    }
+}
+
+
+sub formalize_morphology_group_analyze
 {
     my $project_name = shift;
 
@@ -1244,7 +1325,7 @@ sub formalize_morphology_group
 }
 
 
-sub formalize_operation
+sub formalize_morphology_operation
 {
     my $project_name = shift;
 
@@ -1343,25 +1424,46 @@ sub main
     }
     elsif ($morphology_group_name)
     {
-	&header("Morphology Group Browser: $morphology_group_name", "", undef, 1, 1, 0, '');
+	if ($operation_name)
+	{
+	    &header("Morphology Group Browser: $morphology_group_name", "", undef, 1, 1, 0, '');
 
-	print "<hr>\n";
+	    print "<hr>\n";
 
-	formalize_morphology_group($project_name, $morphology_group_name);
+	    formalize_morphology_group_operation($project_name, $morphology_group_name, $operation_name);
 
-	# finalize (web|user)min specific stuff.
+	    # finalize (web|user)min specific stuff.
 
-	&footer("index.cgi?project_name=${project_name}", "All Morphologies");
+	    &footer("index.cgi?project_name=${project_name}", "All Morphologies");
+	}
+	else
+	{
+	    my $url = ".";
+
+	    &redirect($url, 'Project Browser');
+	}
     }
     elsif ($morphology_name)
     {
-	if (!$operation_name)
+	if ($operation_name eq 'analyze')
 	{
 	    &header("Morphology Browser: $morphology_name", "", undef, 1, 1, 0, '');
 
 	    print "<hr>\n";
 
-	    formalize_morphology($project_name, $morphology_name);
+	    formalize_morphology_analyze($project_name, $morphology_name);
+
+	    # finalize (web|user)min specific stuff.
+
+	    &footer("index.cgi?project_name=${project_name}", "All Morphologies");
+	}
+	elsif ($operation_name eq 'view')
+	{
+	    &header("Morphology Browser: $morphology_name", "", undef, 1, 1, 0, '');
+
+	    print "<hr>\n";
+
+	    formalize_morphology_view($project_name, $morphology_name);
 
 	    # finalize (web|user)min specific stuff.
 
@@ -1373,7 +1475,7 @@ sub main
 
 	    print "<hr>\n";
 
-	    formalize_operation($project_name, $morphology_name, $operation_name);
+	    formalize_morphology_operation($project_name, $morphology_name, $operation_name);
 
 	    # finalize (web|user)min specific stuff.
 
