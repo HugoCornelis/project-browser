@@ -885,7 +885,7 @@ sub document_morphologies
 		    my $group_name = $group_names->[0];
 
 		    (
-		     "group$group_number" => ( $all_morphology_groups->{groups}->{$group_name}->{morphologies}->{$morphology_name} ? 1 : 0),
+		     "group$group_name" => ( $all_morphology_groups->{groups}->{$group_name}->{morphologies}->{$morphology_name} ? 1 : 0),
 		    );
 		}
 		1 .. scalar keys %{$all_morphology_groups->{groups}},
@@ -973,7 +973,7 @@ sub document_morphologies
 		(
 		 {
 		  header => $group_name,
-		  key_name => 'group' . $all_morphology_groups->{groups}->{$group_name}->{number},
+		  key_name => 'group' . $group_name,
 		  type => 'checkbox',
 		  be_defined => 1,
 # 		  generate =>
@@ -1133,7 +1133,7 @@ sub document_morphologies
 
 					    # set in the group descriptor
 
-					    $group->{morphologies}->{$morphology_name} = $contents->{$morphology_name}->{"group" . $group->{number}};
+					    $group->{morphologies}->{$morphology_name} = $contents->{$morphology_name}->{"group" . $group_name};
 					}
 				    }
 
