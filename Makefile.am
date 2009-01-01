@@ -64,3 +64,5 @@ install-exec-hook:
 
 #usermin_HEADERS = @USERMIN_MODULES@
 
+docs: html-upload-prepare
+
