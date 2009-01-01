@@ -55,6 +55,10 @@ sub _decapsulate_checkbox
 
 	$value = 1;
     }
+
+    #t but unchecked checkboxes are not passed through at all
+    #t so this code is never reached.
+
     else
     {
 	$value = 0;
