@@ -703,6 +703,10 @@ sub parse_input
 
     my $decapsulated;
 
+    #t unchecked checkboxes are not passed through by CGI, so are not
+    #t in @query_params.  Perhaps this can be solved by using default
+    #t default values ?
+
     while ($#query_params >= 0)
     {
 	my $key = pop(@query_params) ;
