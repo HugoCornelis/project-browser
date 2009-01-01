@@ -707,6 +707,10 @@ sub parse_input
     #t in @query_params.  Perhaps this can be solved by using default
     #t default values ?
 
+    #t loop over all fields from the table format
+    #t   assign default value
+    #t     perhaps only for certain field types like checkboxes.
+
     while ($#query_params >= 0)
     {
 	my $key = pop(@query_params) ;
