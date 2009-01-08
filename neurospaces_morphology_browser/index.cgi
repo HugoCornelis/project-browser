@@ -550,6 +550,12 @@ sub document_morphologies
 	     type => 'constant',
 	    },
 	    {
+	     filter_defined => 1,
+	     header => '# Cells',
+	     key_name => 'number_of_cells',
+	     type => 'constant',
+	    },
+	    {
 	     be_defined => 1,
 	     generate =>
 	     sub
@@ -729,6 +735,7 @@ sub document_morphologies
 		 return
 		 {
 		  analyze => 1,
+		  number_of_cells => scalar grep { $_[1]->{morphologies}->{$_} } keys %{$_[1]->{morphologies}},
 		  view => 1,
 		  %{$_[1]},
 		 };
@@ -879,6 +886,8 @@ sub document_morphologies
 
 		    if ($#$group_names ne 0)
 		    {
+			#! can mean that two groups have the same group number
+
 			die "$0: group_names inconsistency, group_names is $#$group_names";
 		    }
 

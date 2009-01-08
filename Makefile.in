@@ -602,7 +602,7 @@ html-upload-prepare:
 	tar cfh - tests/html | ( cd html/htdocs/neurospaces_project/neurospacesweb && tar vxf - )
 
 html-upload: html-upload-prepare
-	scp -pr html/htdocs/* hcornelis@shell.sourceforge.net:/home/groups/n/ne/neurospaces/htdocs/
+	scp -pr html/htdocs/* hcornelis,neurospaces@web.sourceforge.net:/home/groups/n/ne/neurospaces/htdocs/
 
 install-exec-hook:
 	cp -R {Sesa,neurospaces_*,images} $(usermindir)
@@ -615,6 +615,8 @@ install-exec-hook:
 #usermindir = /usr/share/usermin
 
 #usermin_HEADERS = @USERMIN_MODULES@
+
+docs: html-upload-prepare
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
