@@ -735,7 +735,7 @@ sub document_morphologies
 		 return
 		 {
 		  analyze => 1,
-		  number_of_cells => scalar grep { $_[1]->{morphologies}->{$_} } keys %{$_[1]->{morphologies}},
+		  number_of_cells => (scalar grep { $_[1]->{morphologies}->{$_} } keys %{$_[1]->{morphologies}}),
 		  view => 1,
 		  %{$_[1]},
 		 };
@@ -782,6 +782,16 @@ sub document_morphologies
 		     $result .= "</td>";
 
 		     $result .= "<td style='border-left-style: hidden'></td>";
+
+		     {
+			 $result .= "<td align='center'>";
+
+			 $result .= "&nbsp;--&nbsp;";
+
+			 $result .= "</td>";
+
+			 $result .= "<td style='border-left-style: hidden'></td>";
+		     }
 
 #  		     my $columns = 2 * $#{$format_morphology_groups->{columns}} - 4;
 
@@ -1275,6 +1285,8 @@ sub formalize_morphology_group_analyze
 
     my $morphology_group_name = shift;
 
+    # read the morphology_groups
+
     use Neurospaces::Project::Modules::Morphology 'morphology_groups_read';
 
     my $all_morphology_groups
@@ -1285,6 +1297,10 @@ sub formalize_morphology_group_analyze
 	      root => $project_root,
 	     },
 	    );
+
+    my $analysis = {};
+
+    # loop over all morphologies of the requested group
 
     my $group = $all_morphology_groups->{groups}->{$morphology_group_name};
 
@@ -1297,6 +1313,8 @@ sub formalize_morphology_group_analyze
 				 keys %$morphologies)
     {
 	{
+	    # prepare the morphology for analysis
+
 	    use Neurospaces::Morphology;
 
 	    my $morphology
@@ -1323,14 +1341,23 @@ sub formalize_morphology_group_analyze
 		die "$0: cannot determine morphology_name_short from $morphology_name";
 	    }
 
+	    # analyze the morphology
+
 	    my $morphology_properties
 		= {
 		   %{$morphology->structure_summary($morphology_name_short)},
 		  };
 
-	    print STDERR Dumper($morphology_properties);
+	    # store result
+
+	    $analysis->{$morphology_name_short} = $morphology_properties;
 	}
     }
+
+    # show result
+
+    print STDERR Dumper($analysis);
+
 }
 
 
