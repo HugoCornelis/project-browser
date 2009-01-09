@@ -808,7 +808,7 @@ sub document_morphologies
 
 		     $result .= "<td style='border-left-style: hidden'></td>";
 
-		     foreach my $column_format (4 .. $#{$format_morphology_groups->{columns}})
+		     foreach my $column_format (5 .. $#{$format_morphology_groups->{columns}})
 		     {
 			 $result .= "<td align='center'>";
 
