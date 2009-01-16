@@ -104,7 +104,7 @@ sub morphology_groups_write
 	return $result;
     }
 
-    use Sesa::Persistency;
+    require Sesa::Persistency;
 
     Sesa::Persistency::create_backup_and_write("$project_root/$project_name/morphology_groups/descriptor.yml", $morphology_groups);
 
