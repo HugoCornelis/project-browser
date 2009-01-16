@@ -68,7 +68,7 @@ sub load
 
     my $neurospaces_config = LoadFile('/etc/neurospaces/project_browser/project_browser.yml');
 
-    my $project_config = LoadFile("$neurospaces_config->{project_browser}->{root_directory}/$options->{name}/configuration.yml");
+    my $project_config = LoadFile("$neurospaces_config->{project_browser}->{root_directory}/$options->{name}/descriptor.yml");
 
     my $result
 	= Neurospaces::Project->new
