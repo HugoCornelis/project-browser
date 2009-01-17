@@ -16,6 +16,7 @@ SUBDIRS = perl tests
 
 dist_bin_SCRIPTS = \
 	bin/pb-create-module \
+	bin/pb-create-project \
 	bin/pb-pull \
 	bin/pb-push \
 	bin/pb-version
