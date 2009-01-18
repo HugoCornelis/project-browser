@@ -53,90 +53,33 @@ $SIG{__DIE__}
     };
 
 
-our $option_verbose;
+my $option_description;
+my $option_name;
+my $option_verbose;
 
 my $exit_code = 0;
 
-
-my $project_directories
-    = [
-       {
-	description => 'directory with subdirectories with reconstructed neuronal morphologies',
-	directory => 'morphologies',
-	related => [
-		    {
-		     description => 'morphology_groups',
-		     directory => 'morphology_groups',
-		    },
-		    {
-		     description => 'network_groups',
-		     directory => 'network_groups',
-		    },
-		    {
-		     description => 'kinetic_groups',
-		     directory => 'kinetic_groups',
-		    },
-		   ],
-       },
-       {
-	description => 'database that groups reconstructed neuronal morphologies for further analysis',
-	directory => 'morphology_groups',
-       },
-       {
-	description => 'database with simulation definitions',
-	directory => 'modules',
-       },
-       {
-	description => 'free style pictures',
-	directory => 'pictures',
-       },
-       {
-	description => 'scripts for analysis',
-	directory => 'scripts',
-       },
-       {
-	description => 'output of analysis scripts',
-	directory => 'scripts/output',
-       },
-       {
-	description => 'colormaps of morphologies',
-	directory => 'colormaps',
-       },
-       {
-	description => 'narrative overview of the project',
-	directory => 'narrative_components',
-       },
-       {
-	description => 'summary notes of project progress',
-	directory => 'summary',
-       },
-       {
-	description => 'papers related to this project',
-	directory => 'papers',
-       },
-       {
-	description => 'models private to this project',
-	directory => 'models',
-       },
-       {
-	description => 'project component replicator',
-	directory => 'replicator',
-       },
-      ];
 
 sub main
 {
     read_cmd_line();
 
-    # nothing here yet.
+    # create internal project
 
-    #t figure out project name, $option_project
+    my $project
+	= Neurospaces::Project->new
+	    (
+	     {
+	      description => $option_description,
+	      name => $option_name,
+	     },
+	    );
 
-    #t count existing modules
 
-    #t create directories
+    # create directory layout
 
-    #t fill in description
+    $project->create();
+
 }
 
 
@@ -148,7 +91,9 @@ sub read_cmd_line
     my $result
 	= GetOptions
 	    (
+	     "description=s" => \$option_description,
 	     "help!" => \$option_help,
+	     "name=s" => \$option_name,
 	     "v|verbose+" => \$option_verbose,
 	     "version" => \$option_version,
 	    );
@@ -171,7 +116,9 @@ $0 <options>
 $0: create a new neurospaces project-browser simulation module
 
 options:
+    description        one line description of the project.
     help               print usage information.
+    name               name of the project.
     verbose            set verbosity level.
     version            give version information.
 ";
