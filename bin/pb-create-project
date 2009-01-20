@@ -8,49 +8,43 @@ use strict;
 $| = 1;
 
 
-# BEGIN
-# {
-#     # during tests
+BEGIN
+{
+    # during tests
 
-#     push @INC, '../glue/swig/perl';
+    push @INC, '../glue/swig/perl';
 
-#     # during distcheck
+    # during distcheck
 
-#     push @INC, '../../glue/swig/perl';
+    push @INC, '../../glue/swig/perl';
 
-#     # after installation
+    # after installation
 
-#     push @INC, '/usr/local/glue/swig/perl';
-# }
+    push @INC, '/usr/local/glue/swig/perl';
+}
 
 
-# BEGIN
-# {
-#     # for main during tests
+BEGIN
+{
+    # for main during tests
 
-#     push @INC, 'tests/glue/swig/perl';
+    push @INC, 'tests/glue/swig/perl';
 
-#     # for main during check
+    # for main during check
 
-#     push @INC, './glue/swig/perl';
+    push @INC, './glue/swig/perl';
 
-#     # for main during distcheck
+    # for main during distcheck
 
-#     push @INC, '../../tests/glue/swig/perl';
-# }
+    push @INC, '../../tests/glue/swig/perl';
+}
 
 
 use Getopt::Long;
 
+use Neurospaces::Project;
+
 use YAML;
-
-
-$SIG{__DIE__}
-    = sub {
-	use Carp;
-
-	confess @_;
-    };
 
 
 my $option_description;
@@ -63,6 +57,13 @@ my $exit_code = 0;
 sub main
 {
     read_cmd_line();
+
+    $SIG{__DIE__}
+	= sub {
+	    use Carp;
+
+	    confess @_;
+	};
 
     # create internal project
 
@@ -126,6 +127,10 @@ options:
 	exit 1;
     }
 
+    if (!defined $option_name || !defined $option_description)
+    {
+	die "$0: You must use both --name and --description options on the command line";
+    }
 }
 
 

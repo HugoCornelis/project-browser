@@ -122,13 +122,38 @@ sub create
 {
     my $self = shift;
 
+    # create project directory
+
+    my $directory = "$self->{root}/$self->{name}";
+
+    if (!-d $directory)
+    {
+	mkdir $directory;
+    }
+
+    # create project descriptor
+
+    my $descriptor_filename = "$directory/descriptor.yml";
+
+    if (!-r $descriptor_filename)
+    {
+	my $descriptor
+	    = {
+	       description => $self->{description},
+	      };
+
+	use YAML "DumpFile";
+
+	DumpFile($descriptor_filename, $descriptor);
+    }
+
     # loop through all project directories
 
     foreach my $project_directory (@$project_directories)
     {
-	my $directory = $project_directory->{directory};
+	my $directory = "$self->{root}/$self->{name}/$project_directory->{directory}";
 
-	# create a directory
+	# create directory
 
 	if (!-d $directory)
 	{
@@ -214,11 +239,11 @@ sub new
 	      };
     }
 
-    my $project_config = LoadFile("$neurospaces_config->{project_browser}->{root_directory}/$options->{name}/descriptor.yml");
+#     my $project_config = LoadFile("$neurospaces_config->{project_browser}->{root_directory}/$options->{name}/descriptor.yml");
 
     my $self
 	= {
-	   config => $project_config,
+# 	   config => $project_config,
 	   name => $options->{name},
 	   root => "$neurospaces_config->{project_browser}->{root_directory}",
 	   %$options,
