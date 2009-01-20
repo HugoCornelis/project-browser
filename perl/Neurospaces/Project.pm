@@ -4,8 +4,6 @@
 ## Neurospaces: a library which implements a global typed symbol table to
 ## be used in neurobiological model maintenance and simulation.
 ##
-## $Id: GUI.pm 1.27 Sat, 21 Apr 2007 21:21:25 -0500 hugo $
-##
 
 ##############################################################################
 ##'
