@@ -308,7 +308,7 @@ sub document_projects
 
 		     $result .= "<td align='center'>";
 		     $result .= $query->textfield(
-						  -name      => "field$self->{separator}$self->{name}_add_group-name",
+						  -name      => "field$self->{separator}$self->{name}$self->{separator}add$self->{separator}id",
 						  -default   => '',
 						  -override  => 1,
 						  -size      => 35,
@@ -320,7 +320,7 @@ sub document_projects
 
 		     $result .= "<td align='center'>";
 		     $result .= $query->textfield(
-						  -name      => "field$self->{separator}$self->{name}_add_group-description",
+						  -name      => "field$self->{separator}$self->{name}$self->{separator}add$self->{separator}name",
 						  -default   => '',
 						  -override  => 1,
 						  -size      => 35,
@@ -332,7 +332,7 @@ sub document_projects
 
 		     $result .= "<td align='center'>";
 		     $result .= $query->textfield(
-						  -name      => "field$self->{separator}$self->{name}_add_group-description",
+						  -name      => "field$self->{separator}$self->{name}$self->{separator}add$self->{separator}description",
 						  -default   => '',
 						  -override  => 1,
 						  -size      => 35,
@@ -378,6 +378,8 @@ sub document_projects
 				    my $action = $request;
 
 				    #t get other data
+
+				    #t pb-create-project --description description --name name
 				},
 			       },
 	     submit_actions => {

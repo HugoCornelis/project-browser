@@ -685,8 +685,10 @@ sub parse_input
 
     # if there is nothing to parse for this document
 
-    if ($result->{cmd}->{action} ne 'submit'
-        || $result->{cmd}->{request} ne $self->{name})
+    #t consolidate 'cmd' with 'button' will remove the indirection on
+    #t the second key (ie. {$result->{cmd}->{action}}).
+
+    if ($result->{$result->{cmd}->{action}}->{request} !~ /^$self->{name}_/)
     {
 	return $result;
     }

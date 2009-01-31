@@ -1,5 +1,9 @@
 -*- outline -*-
 
+* Sesa/TableDocument.pm
+#t consolidate 'cmd' with 'button' will remove the indirection on
+#t the second key (ie. {$result->{cmd}->{action}}).
+
 * When no simulations in a simulation module have been run,
 There should be an appropriate message.
 
