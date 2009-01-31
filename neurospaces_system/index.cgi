@@ -112,7 +112,7 @@ sub document_projects
 	    {
 	     be_defined => 1,
 	     header => 'Project ID',
-	     key_name => 'dummy1',
+	     key_name => 'id',
 	     type => 'constant',
 	    },
 	    {

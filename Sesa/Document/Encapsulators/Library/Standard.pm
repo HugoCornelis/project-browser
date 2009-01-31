@@ -68,6 +68,14 @@ sub _decapsulate_checkbox
 }
 
 
+sub _decapsulate_constant
+{
+    my ($self, $path, $column, $contents, $value, $options) = @_;
+
+    return($path, $value);
+}
+
+
 sub _decapsulate_optional_textfield
 {
     my ($self, $path, $column, $contents, $value, $options) = @_;
