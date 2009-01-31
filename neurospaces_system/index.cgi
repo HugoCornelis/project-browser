@@ -369,6 +369,17 @@ sub document_projects
 	     },
 	     separator => '/',
 	     sort => sub { return $_[2]->{number} <=> $_[3]->{number} },
+	     button_actions => {
+				add =>
+				sub
+				{
+				    my ($document, $request, $contents, ) = @_;
+
+				    my $action = $request;
+
+				    #t get other data
+				},
+			       },
 	     submit_actions => {
 				'all-projects' =>
 				sub
