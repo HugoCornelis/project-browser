@@ -308,7 +308,7 @@ sub document_projects
 
 		     $result .= "<td align='center'>";
 		     $result .= $query->textfield(
-						  -name      => "field$self->{separator}$self->{name}$self->{separator}add$self->{separator}id",
+						  -name      => "field$self->{separator}$self->{name}$self->{separator}id$self->{separator}add",
 						  -default   => '',
 						  -override  => 1,
 						  -size      => 35,
@@ -320,7 +320,7 @@ sub document_projects
 
 		     $result .= "<td align='center'>";
 		     $result .= $query->textfield(
-						  -name      => "field$self->{separator}$self->{name}$self->{separator}add$self->{separator}name",
+						  -name      => "field$self->{separator}$self->{name}$self->{separator}name$self->{separator}add",
 						  -default   => '',
 						  -override  => 1,
 						  -size      => 35,
@@ -332,7 +332,7 @@ sub document_projects
 
 		     $result .= "<td align='center'>";
 		     $result .= $query->textfield(
-						  -name      => "field$self->{separator}$self->{name}$self->{separator}add$self->{separator}description",
+						  -name      => "field$self->{separator}$self->{name}$self->{separator}description$self->{separator}add",
 						  -default   => '',
 						  -override  => 1,
 						  -size      => 35,
