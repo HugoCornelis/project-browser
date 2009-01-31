@@ -24,6 +24,16 @@ package Neurospaces::Project;
 use strict;
 
 
+require Exporter;
+
+our @ISA = qw(Exporter);
+
+our @EXPORT_OK
+    = qw(
+	 projects_read
+	);
+
+
 use Neurospaces::Project::Modules::Morphology;
 
 
@@ -94,25 +104,47 @@ our $project_directories
       ];
 
 
-sub all_morphologies
+sub projects_read
 {
     my $self = shift;
 
-    my $project_name = $self->{name};
+    use YAML 'LoadFile';
 
-    my $project_root = $self->{root};
+    my $neurospaces_config = LoadFile('/etc/neurospaces/project_browser/project_browser.yml');
+
+    my $project_root = $neurospaces_config->{project_browser}->{root_directory};
 
     #t replace with File::Find;
 
-    my $result
-	= [
-	   sort
+    my $all_projects
+	= {
+	   map
+	   {
+	       print STDERR "$_ $project_root\n";
+
+	       my $descriptor = LoadFile("$_/descriptor.yml");
+
+	       s(.*/)();
+
+	       $_ => $descriptor;
+	   }
+	   grep
+	   {
+	       print STDERR "$_ $project_root\n";
+
+	       $_ ne $project_root
+	   }
 	   map
 	   {
 	       chomp; $_;
 	   }
-	   `find "$project_root/$project_name/morphologies" -name "*.ndf" -o -name "*.p" -o -iname "*.swc"`,
-	  ];
+	   `find "$project_root" -maxdepth 1 -type d`,
+	  };
+
+    my $result
+	= {
+	   projects => $all_projects,
+	  };
 
     return $result;
 }
