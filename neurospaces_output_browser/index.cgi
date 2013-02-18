@@ -219,7 +219,7 @@ sub document_output_root
 
     # remove known protocol names
 
-    my $known_protocols = [ 'conceptual_parameters', 'current', ];
+    my $known_protocols = [ 'runtime_parameters', 'current', ];
 
     my $used_protocols = $uniques->[1];
 
@@ -563,7 +563,7 @@ sub document_output_root
 
 					  if ($column_label =~ /FREQ/)
 					  {
-					      $schedule_header = "conceptual_parameters_$column_label";
+					      $schedule_header = "runtime_parameters_$column_label";
 					  }
 					  else
 					  {

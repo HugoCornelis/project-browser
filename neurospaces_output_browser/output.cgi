@@ -54,7 +54,7 @@ use Sesa::Workflow;
 my $query = CGI->new();
 
 
-# https://localhost:20000/neurospaces_output_browser/output.cgi?project_name=purkinje-comparison&subproject_name=modules&module_name=1&schedule_name=Purk2M9s__conceptual_parameters_FREQUENCY_10_0.5
+# https://localhost:20000/neurospaces_output_browser/output.cgi?project_name=purkinje-comparison&subproject_name=modules&module_name=1&schedule_name=Purk2M9s__runtime_parameters_FREQUENCY_10_0.5
 
 use YAML 'LoadFile';
 
@@ -303,7 +303,7 @@ sub document_ssp_outputs
 
 					  if ($column_label =~ /FREQ/)
 					  {
-					      $schedule_header = "conceptual_parameters_$column_label";
+					      $schedule_header = "runtime_parameters_$column_label";
 					  }
 					  else
 					  {
