@@ -10,7 +10,7 @@
 ##'
 ##############################################################################
 
-perldir = $(prefix)/glue/swig/perl
+perldir = @PMDIR@
 
 nobase_dist_perl_DATA = @PERL_MODULES@
 
