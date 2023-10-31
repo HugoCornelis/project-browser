@@ -1,0 +1,8 @@
+*~
+Makefile
+_MTN/
+autom4te.cache/
+config.log
+config.status
+install-sh
+missing
